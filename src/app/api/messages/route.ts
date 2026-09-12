@@ -1,15 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session?.tenantId) {
+      return NextResponse.json({ ok: false, error: "Non autorisé" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, Number(searchParams.get("page") || "1"));
     const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit") || "10")));
     const search = (searchParams.get("search") || "").trim();
 
+    const baseWhere = { tenantId: session.tenantId };
     const where = search
       ? {
+          ...baseWhere,
           OR: [
             { name: { contains: search } },
             { email: { contains: search } },
@@ -17,7 +25,7 @@ export async function GET(req: NextRequest) {
             { message: { contains: search } },
           ],
         }
-      : {};
+      : baseWhere;
 
     const [total, items] = await Promise.all([
       db.contactMessage.count({ where }).catch(() => 0),

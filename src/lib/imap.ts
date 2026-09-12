@@ -16,10 +16,14 @@ type EmailSettings = {
   fromName: string | null;
 };
 
-export async function getEmailConfig(): Promise<EmailSettings | null> {
-  const settings = await db.emailSettings
-    .findUnique({ where: { id: "singleton" } })
-    .catch(() => null);
+export async function getEmailConfig(tenantId?: string | null): Promise<EmailSettings | null> {
+  // Read per-tenant settings. When a tenantId is provided, look it up directly.
+  // When omitted (e.g. legacy callers / public endpoints without a session),
+  // fall back to the first available settings row so IMAP/SMTP still works in
+  // a single-tenant dev setup.
+  const settings = tenantId
+    ? await db.emailSettings.findUnique({ where: { tenantId } }).catch(() => null)
+    : await db.emailSettings.findFirst().catch(() => null);
   if (!settings) return null;
   return {
     imapHost: settings.imapHost || settings.smtpHost,

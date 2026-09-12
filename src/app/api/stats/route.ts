@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 
 const MONTHS_FR = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
 
 export async function GET() {
   try {
+    const session = await getSession();
+    if (!session?.tenantId) {
+      return NextResponse.json({ ok: false, error: "Non autorisé" }, { status: 401 });
+    }
+    const tenantId = session.tenantId;
+
     const now = new Date();
     const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const start7days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -26,29 +33,30 @@ export async function GET() {
       browsersRaw,
       dailyRaw,
     ] = await Promise.all([
-      db.pageView.count().catch(() => 0),
-      db.pageView.count({ where: { createdAt: { gte: startToday } } }).catch(() => 0),
+      db.pageView.count({ where: { tenantId } }).catch(() => 0),
+      db.pageView.count({ where: { tenantId, createdAt: { gte: startToday } } }).catch(() => 0),
       db.pageView.findMany({
-        where: { createdAt: { gte: start30days } },
+        where: { tenantId, createdAt: { gte: start30days } },
         select: { sessionId: true },
         distinct: ["sessionId"],
       }).then((r) => r.length).catch(() => 0),
-      db.clickEvent.count().catch(() => 0),
-      db.clickEvent.count({ where: { type: "whatsapp" } }).catch(() => 0),
-      db.clickEvent.count({ where: { type: "phone" } }).catch(() => 0),
-      db.contactMessage.count({ where: { createdAt: { gte: start30days } } }).catch(() => 0),
-      db.appointment.count({ where: { createdAt: { gte: start30days } } }).catch(() => 0),
+      db.clickEvent.count({ where: { tenantId } }).catch(() => 0),
+      db.clickEvent.count({ where: { tenantId, type: "whatsapp" } }).catch(() => 0),
+      db.clickEvent.count({ where: { tenantId, type: "phone" } }).catch(() => 0),
+      db.contactMessage.count({ where: { tenantId, createdAt: { gte: start30days } } }).catch(() => 0),
+      db.appointment.count({ where: { tenantId, createdAt: { gte: start30days } } }).catch(() => 0),
       db.pageView.findMany({
+        where: { tenantId },
         orderBy: { createdAt: "desc" },
         take: 50,
         select: { createdAt: true, path: true, device: true, country: true, city: true },
       }).catch(() => []),
-      db.pageView.groupBy({ by: ["path"], _count: true, orderBy: { _count: { path: "desc" } }, take: 10 }).catch(() => []),
-      db.pageView.groupBy({ by: ["referrer"], _count: true, orderBy: { _count: { referrer: "desc" } }, take: 8 }).catch(() => []),
-      db.pageView.groupBy({ by: ["device"], _count: true }).catch(() => []),
-      db.pageView.groupBy({ by: ["browser"], _count: true }).catch(() => []),
+      db.pageView.groupBy({ by: ["path"], where: { tenantId }, _count: true, orderBy: { _count: { path: "desc" } }, take: 10 }).catch(() => []),
+      db.pageView.groupBy({ by: ["referrer"], where: { tenantId }, _count: true, orderBy: { _count: { referrer: "desc" } }, take: 8 }).catch(() => []),
+      db.pageView.groupBy({ by: ["device"], where: { tenantId }, _count: true }).catch(() => []),
+      db.pageView.groupBy({ by: ["browser"], where: { tenantId }, _count: true }).catch(() => []),
       db.pageView.findMany({
-        where: { createdAt: { gte: start7days } },
+        where: { tenantId, createdAt: { gte: start7days } },
         select: { createdAt: true },
       }).catch(() => []),
     ]);
@@ -74,7 +82,7 @@ export async function GET() {
       const start = d;
       const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
       const count = await db.pageView.count({
-        where: { createdAt: { gte: start, lt: end } },
+        where: { tenantId, createdAt: { gte: start, lt: end } },
       }).catch(() => 0);
       monthly.push({ month: MONTHS_FR[d.getMonth()], count });
     }

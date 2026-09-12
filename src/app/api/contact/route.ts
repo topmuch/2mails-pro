@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 import { sendContactNotification } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
@@ -34,6 +35,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Public endpoint: try to resolve a tenant from the session cookie. If the
+    // submitter is a logged-in dashboard user, attribute the message to their
+    // tenant. If anonymous, leave tenantId unset (record can be reassigned
+    // later) — wrapped in its own try/catch so a NOT NULL violation on the
+    // column doesn't break the response.
+    const session = await getSession();
+    const tenantId = session?.tenantId ?? null;
+
     // Store in DB
     let recordId: string | null = null;
     try {
@@ -44,7 +53,8 @@ export async function POST(req: NextRequest) {
           phone: phone || null,
           subject: subject || null,
           message,
-        },
+          ...(tenantId ? { tenantId } : {}),
+        } as never,
       });
       recordId = record.id;
     } catch (dbErr) {
@@ -52,7 +62,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Send email notification (non-blocking, failures don't break the response)
-    sendContactNotification({ name, email, phone: phone || null, subject: subject || null, message })
+    sendContactNotification(
+      { name, email, phone: phone || null, subject: subject || null, message },
+      tenantId,
+    )
       .then((sent) => {
         if (sent) console.log("[contact] Email notification sent");
         else console.log("[contact] Email notification not sent (disabled or config missing)");

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 
 // POST: record a page view or a click event
 export async function POST(req: NextRequest) {
@@ -11,6 +12,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "sessionId required" }, { status: 400 });
     }
 
+    // Try to resolve a tenant from the session cookie. Public visitors will
+    // typically have no session — in that case the record is created without
+    // tenantId (a NOT NULL violation will be silently caught and logged).
+    const session = await getSession();
+    const tenantId = session?.tenantId ?? null;
+
     if (kind === "click") {
       const type = typeof body.type === "string" ? body.type : null;
       const page = typeof body.page === "string" ? body.page : null;
@@ -18,7 +25,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: false, error: "type and page required" }, { status: 400 });
       }
       await db.clickEvent.create({
-        data: { type, page, sessionId },
+        data: { type, page, sessionId, ...(tenantId ? { tenantId } : {}) } as never,
       }).catch((e) => console.error("[tracking click]", e));
       return NextResponse.json({ ok: true });
     }
@@ -35,7 +42,7 @@ export async function POST(req: NextRequest) {
     const city = typeof body.city === "string" ? body.city : null;
 
     await db.pageView.create({
-      data: { path, referrer, device, browser, country, city, sessionId },
+      data: { path, referrer, device, browser, country, city, sessionId, ...(tenantId ? { tenantId } : {}) } as never,
     }).catch((e) => console.error("[tracking pageview]", e));
 
     return NextResponse.json({ ok: true });

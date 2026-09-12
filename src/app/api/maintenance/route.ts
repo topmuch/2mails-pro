@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 
 const DEFAULTS = {
   enabled: false,
@@ -10,27 +11,33 @@ const DEFAULTS = {
 
 export async function GET() {
   try {
+    const session = await getSession();
+    if (!session?.tenantId) {
+      return NextResponse.json({ ok: false, error: "Non autorisé" }, { status: 401 });
+    }
+
     const settings = await db.maintenanceSettings
-      .findUnique({ where: { id: "singleton" } })
+      .findUnique({ where: { tenantId: session.tenantId } })
       .catch(() => null);
 
     if (!settings) {
       const created = await db.maintenanceSettings
-        .create({ data: { id: "singleton", ...DEFAULTS } })
+        .create({ data: { tenantId: session.tenantId, ...DEFAULTS } })
         .catch(() => null);
       if (created) {
         return NextResponse.json({
           ok: true,
-          data: { ...DEFAULTS, id: created.id, updatedAt: created.updatedAt.toISOString() },
+          data: { ...DEFAULTS, id: created.id, tenantId: created.tenantId, updatedAt: created.updatedAt.toISOString() },
         });
       }
-      return NextResponse.json({ ok: true, data: { id: "singleton", ...DEFAULTS } });
+      return NextResponse.json({ ok: true, data: { tenantId: session.tenantId, ...DEFAULTS, updatedAt: new Date().toISOString() } });
     }
 
     return NextResponse.json({
       ok: true,
       data: {
         id: settings.id,
+        tenantId: settings.tenantId,
         enabled: settings.enabled,
         messageFr: settings.messageFr,
         messageEn: settings.messageEn,
@@ -46,6 +53,11 @@ export async function GET() {
 
 export async function PUT(req: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session?.tenantId) {
+      return NextResponse.json({ ok: false, error: "Non autorisé" }, { status: 401 });
+    }
+
     const body = await req.json();
     const data = {
       enabled: typeof body.enabled === "boolean" ? body.enabled : undefined,
@@ -64,9 +76,9 @@ export async function PUT(req: NextRequest) {
     );
 
     const updated = await db.maintenanceSettings.upsert({
-      where: { id: "singleton" },
+      where: { tenantId: session.tenantId },
       create: {
-        id: "singleton",
+        tenantId: session.tenantId,
         enabled: body.enabled ?? false,
         messageFr: body.messageFr || DEFAULTS.messageFr,
         messageEn: body.messageEn || DEFAULTS.messageEn,

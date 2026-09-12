@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 import { sendAppointmentNotification } from "@/lib/email";
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session?.tenantId) {
+      return NextResponse.json({ ok: false, error: "Non autorisé" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status") || "";
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { tenantId: session.tenantId };
     if (status) where.status = status;
 
     const [total, items] = await Promise.all([
@@ -51,19 +57,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const created = await db.appointment.create({
-      data: {
-        name,
-        email,
-        phone: body.phone?.trim() || null,
-        company: body.company?.trim() || null,
-        subject: body.subject?.trim() || null,
-        preferredDate: body.preferredDate?.trim() || null,
-        preferredTime: body.preferredTime?.trim() || null,
-        message,
-        status: "pending",
-      },
-    });
+    // Public endpoint: try session for tenant attribution, fall back to no tenantId
+    // (the record can be assigned to a tenant later).
+    const session = await getSession();
+    const tenantId = session?.tenantId ?? null;
+
+    let createdId: string | null = null;
+    try {
+      const created = await db.appointment.create({
+        data: {
+          name,
+          email,
+          phone: body.phone?.trim() || null,
+          company: body.company?.trim() || null,
+          subject: body.subject?.trim() || null,
+          preferredDate: body.preferredDate?.trim() || null,
+          preferredTime: body.preferredTime?.trim() || null,
+          message,
+          status: "pending",
+          ...(tenantId ? { tenantId } : {}),
+        } as never,
+      });
+      createdId = created.id;
+    } catch (dbErr) {
+      console.error("[appointments] DB write failed:", dbErr);
+    }
 
     // Send email notification (non-blocking)
     const phone = body.phone?.trim() || null;
@@ -71,23 +89,26 @@ export async function POST(req: NextRequest) {
     const subjectField = body.subject?.trim() || null;
     const preferredDate = body.preferredDate?.trim() || null;
     const preferredTime = body.preferredTime?.trim() || null;
-    sendAppointmentNotification({
-      name,
-      email,
-      phone,
-      company,
-      subject: subjectField,
-      preferredDate,
-      preferredTime,
-      message,
-    })
+    sendAppointmentNotification(
+      {
+        name,
+        email,
+        phone,
+        company,
+        subject: subjectField,
+        preferredDate,
+        preferredTime,
+        message,
+      },
+      tenantId,
+    )
       .then((sent) => {
         if (sent) console.log("[appointments] Email notification sent");
         else console.log("[appointments] Email notification not sent (disabled or config missing)");
       })
       .catch((e) => console.error("[appointments] Email send error:", e));
 
-    return NextResponse.json({ ok: true, id: created.id });
+    return NextResponse.json({ ok: true, id: createdId });
   } catch (err) {
     console.error("[appointments POST]", err);
     return NextResponse.json({ ok: false, error: "server error" }, { status: 500 });

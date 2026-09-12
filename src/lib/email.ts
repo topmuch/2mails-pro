@@ -13,10 +13,14 @@ type EmailSettings = {
   notifyOnAppointment: boolean;
 };
 
-async function getEmailSettings(): Promise<EmailSettings | null> {
-  const settings = await db.emailSettings
-    .findUnique({ where: { id: "singleton" } })
-    .catch(() => null);
+async function getEmailSettings(tenantId?: string | null): Promise<EmailSettings | null> {
+  // Read per-tenant settings. When a tenantId is provided, look it up directly.
+  // When omitted (e.g. legacy callers / public endpoints without a session),
+  // fall back to the first available settings row so SMTP still works in a
+  // single-tenant dev setup.
+  const settings = tenantId
+    ? await db.emailSettings.findUnique({ where: { tenantId } }).catch(() => null)
+    : await db.emailSettings.findFirst().catch(() => null);
   if (!settings) return null;
   return {
     smtpHost: settings.smtpHost,
@@ -55,8 +59,8 @@ type NotificationEmail = {
   text: string;
 };
 
-async function sendMail(payload: NotificationEmail): Promise<boolean> {
-  const settings = await getEmailSettings();
+async function sendMail(payload: NotificationEmail, tenantId?: string | null): Promise<boolean> {
+  const settings = await getEmailSettings(tenantId);
   if (!settings) {
     console.warn("[email] No email settings found in DB");
     return false;
@@ -78,14 +82,17 @@ async function sendMail(payload: NotificationEmail): Promise<boolean> {
   }
 }
 
-export async function sendContactNotification(data: {
-  name: string;
-  email: string;
-  phone?: string | null;
-  subject?: string | null;
-  message: string;
-}): Promise<boolean> {
-  const settings = await getEmailSettings();
+export async function sendContactNotification(
+  data: {
+    name: string;
+    email: string;
+    phone?: string | null;
+    subject?: string | null;
+    message: string;
+  },
+  tenantId?: string | null,
+): Promise<boolean> {
+  const settings = await getEmailSettings(tenantId);
   if (!settings || !settings.notifyOnContact || !settings.notifyEmail) {
     console.log("[email] Contact notification disabled or no notifyEmail");
     return false;
@@ -128,27 +135,33 @@ Cet email a été envoyé automatiquement depuis le formulaire de contact du sit
   </div>
 </div>`;
 
-  return sendMail({
-    to: settings.notifyEmail,
-    from: fromEmail,
-    fromName,
-    subject,
-    html,
-    text,
-  });
+  return sendMail(
+    {
+      to: settings.notifyEmail,
+      from: fromEmail,
+      fromName,
+      subject,
+      html,
+      text,
+    },
+    tenantId,
+  );
 }
 
-export async function sendAppointmentNotification(data: {
-  name: string;
-  email: string;
-  phone?: string | null;
-  company?: string | null;
-  subject?: string | null;
-  preferredDate?: string | null;
-  preferredTime?: string | null;
-  message: string;
-}): Promise<boolean> {
-  const settings = await getEmailSettings();
+export async function sendAppointmentNotification(
+  data: {
+    name: string;
+    email: string;
+    phone?: string | null;
+    company?: string | null;
+    subject?: string | null;
+    preferredDate?: string | null;
+    preferredTime?: string | null;
+    message: string;
+  },
+  tenantId?: string | null,
+): Promise<boolean> {
+  const settings = await getEmailSettings(tenantId);
   if (!settings || !settings.notifyOnAppointment || !settings.notifyEmail) {
     console.log("[email] Appointment notification disabled or no notifyEmail");
     return false;
@@ -197,14 +210,17 @@ Cet email a été envoyé automatiquement depuis le formulaire de rendez-vous du
   </div>
 </div>`;
 
-  return sendMail({
-    to: settings.notifyEmail,
-    from: fromEmail,
-    fromName,
-    subject,
-    html,
-    text,
-  });
+  return sendMail(
+    {
+      to: settings.notifyEmail,
+      from: fromEmail,
+      fromName,
+      subject,
+      html,
+      text,
+    },
+    tenantId,
+  );
 }
 
 function escapeHtml(str: string): string {

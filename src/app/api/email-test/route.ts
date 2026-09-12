@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 import nodemailer from "nodemailer";
 
 // POST /api/email-test — sends a test email to the configured notifyEmail
 export async function POST(req: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session?.tenantId) {
+      return NextResponse.json({ ok: false, error: "Non autorisé" }, { status: 401 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const settings = await db.emailSettings
-      .findUnique({ where: { id: "singleton" } })
+      .findUnique({ where: { tenantId: session.tenantId } })
       .catch(() => null);
 
     if (!settings) {

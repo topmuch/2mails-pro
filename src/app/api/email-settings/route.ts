@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 
 const DEFAULTS = {
   smtpHost: "",
@@ -15,18 +16,23 @@ const DEFAULTS = {
 
 export async function GET() {
   try {
+    const session = await getSession();
+    if (!session?.tenantId) {
+      return NextResponse.json({ ok: false, error: "Non autorisé" }, { status: 401 });
+    }
+
     const settings = await db.emailSettings
-      .findUnique({ where: { id: "singleton" } })
+      .findUnique({ where: { tenantId: session.tenantId } })
       .catch(() => null);
 
     if (!settings) {
       const created = await db.emailSettings
-        .create({ data: { id: "singleton", ...DEFAULTS } })
+        .create({ data: { tenantId: session.tenantId, ...DEFAULTS } })
         .catch(() => null);
       if (created) {
         return NextResponse.json({ ok: true, data: format(created) });
       }
-      return NextResponse.json({ ok: true, data: { id: "singleton", ...DEFAULTS } });
+      return NextResponse.json({ ok: true, data: { tenantId: session.tenantId, ...DEFAULTS, updatedAt: new Date().toISOString() } });
     }
     return NextResponse.json({ ok: true, data: format(settings) });
   } catch (err) {
@@ -36,7 +42,7 @@ export async function GET() {
 }
 
 function format(s: {
-  id: string; smtpHost: string | null; smtpPort: number | null;
+  id: string; tenantId: string; smtpHost: string | null; smtpPort: number | null;
   smtpUser: string | null; smtpPassword: string | null; fromEmail: string | null;
   fromName: string | null; notifyEmail: string | null;
   notifyOnContact: boolean; notifyOnAppointment: boolean;
@@ -46,6 +52,7 @@ function format(s: {
 }) {
   return {
     id: s.id,
+    tenantId: s.tenantId,
     smtpHost: s.smtpHost || "",
     smtpPort: s.smtpPort || 587,
     smtpUser: s.smtpUser || "",
@@ -65,6 +72,11 @@ function format(s: {
 
 export async function PUT(req: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session?.tenantId) {
+      return NextResponse.json({ ok: false, error: "Non autorisé" }, { status: 401 });
+    }
+
     const body = await req.json();
     const data = {
       smtpHost: typeof body.smtpHost === "string" ? body.smtpHost.trim() || null : undefined,
@@ -88,9 +100,9 @@ export async function PUT(req: NextRequest) {
     const cleanData = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
 
     const updated = await db.emailSettings.upsert({
-      where: { id: "singleton" },
+      where: { tenantId: session.tenantId },
       create: {
-        id: "singleton",
+        tenantId: session.tenantId,
         smtpHost: body.smtpHost || null,
         smtpPort: typeof body.smtpPort === "number" ? body.smtpPort : 587,
         smtpUser: body.smtpUser || null,

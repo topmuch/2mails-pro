@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session?.tenantId) {
+      return NextResponse.json({ ok: false, error: "Non autorisé" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const search = (searchParams.get("search") || "").trim();
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { tenantId: session.tenantId };
     if (search) {
       where.OR = [
         { name: { contains: search } },
@@ -51,6 +57,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session?.tenantId) {
+      return NextResponse.json({ ok: false, error: "Non autorisé" }, { status: 401 });
+    }
+
     const body = await req.json();
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const role = typeof body.role === "string" ? body.role.trim() : "";
@@ -73,6 +84,7 @@ export async function POST(req: NextRequest) {
         yearsExperience: typeof body.yearsExperience === "number" ? body.yearsExperience : null,
         order: typeof body.order === "number" ? body.order : 0,
         active: typeof body.active === "boolean" ? body.active : true,
+        tenantId: session.tenantId,
       },
     });
 
