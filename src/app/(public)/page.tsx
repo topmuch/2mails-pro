@@ -241,7 +241,7 @@ export default function HomePage() {
                   { }
                   <img
                     src="/warehouse.jpg"
-                    alt="Entreposage et logistique ABCD Ltd"
+                    alt="Entreposage et logistique 2mails.pro"
                     className="w-full h-[360px] sm:h-[500px] object-cover"
                   />
                 </div>
@@ -285,7 +285,7 @@ export default function HomePage() {
                 <p className="mt-6 text-base sm:text-lg text-muted-foreground leading-relaxed">
                   {t("about.desc1.pre")}
                   <strong className="text-foreground">
-                    African Business Company for Development SARL
+                    2mails.pro
                   </strong>
                   {t("about.desc1.post")}
                 </p>

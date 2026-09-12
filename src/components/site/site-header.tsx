@@ -48,11 +48,11 @@ export function SiteHeader() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 sm:h-24 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center group" aria-label="ABCD Ltd">
+          <Link href="/" className="flex items-center group" aria-label="2mails.pro">
             <div className="relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-lg overflow-hidden bg-white p-1.5 ring-1 ring-border">
               <img
-                src="/logo-abcd-transparent.png"
-                alt="Logo ABCD Ltd"
+                src="/logo-2mails-transparent.png"
+                alt="Logo 2mails.pro"
                 className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-300"
               />
             </div>

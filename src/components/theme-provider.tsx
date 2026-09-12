@@ -12,7 +12,7 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-const STORAGE_KEY = "abcd-theme";
+const STORAGE_KEY = "twomails-theme";
 
 function getInitialTheme(): Theme {
   if (typeof window === "undefined") return "light";

@@ -26,13 +26,13 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const service = SERVICES.find((s) => s.slug === slug);
   if (!service) {
-    return { title: "Service introuvable — ABCD Ltd" };
+    return { title: "Service introuvable — 2mails.pro" };
   }
   return {
-    title: `${service.title} — ABCD Ltd Dakar`,
+    title: `${service.title} — 2mails.pro Dakar`,
     description: service.desc,
     openGraph: {
-      title: `${service.title} — ABCD Ltd`,
+      title: `${service.title} — 2mails.pro`,
       description: service.desc,
     },
   };
@@ -161,7 +161,7 @@ export default async function ServiceDetailPage({ params }: Params) {
                 <CardContent className="pt-6">
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-white/80 flex items-center gap-2 mb-3">
                     <ShieldCheck className="h-4 w-4 text-accent" />
-                    Pourquoi ABCD Ltd
+                    Pourquoi 2mails.pro
                   </h3>
                   <ul className="space-y-2.5 text-sm">
                     <li className="flex items-center gap-2 text-white/85">
@@ -186,11 +186,11 @@ export default async function ServiceDetailPage({ params }: Params) {
                       +221 33 821 11 31
                     </a>
                     <a
-                      href="mailto:abcdev@gmail.com"
+                      href="mailto:contact@2mails.pro"
                       className="flex items-center gap-2 text-sm text-white/80 hover:text-accent transition-colors"
                     >
                       <Mail className="h-4 w-4 text-accent" />
-                      abcdev@gmail.com
+                      contact@2mails.pro
                     </a>
                   </div>
                 </CardContent>
@@ -286,9 +286,9 @@ export default async function ServiceDetailPage({ params }: Params) {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="bg-white/10 text-white border-white/30 hover:bg-white/20 hover:text-white backdrop-blur-sm">
-              <a href="mailto:abcdev@gmail.com">
+              <a href="mailto:contact@2mails.pro">
                 <Mail className="mr-2 h-4 w-4" />
-                abcdev@gmail.com
+                contact@2mails.pro
               </a>
             </Button>
           </div>

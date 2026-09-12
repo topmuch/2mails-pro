@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 function getOrCreateSessionId(): string {
   if (typeof window === "undefined") return "";
-  const KEY = "abcd_session_id";
+  const KEY = "twomails_session_id";
   let id = sessionStorage.getItem(KEY);
   if (!id) {
     id = `s_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;

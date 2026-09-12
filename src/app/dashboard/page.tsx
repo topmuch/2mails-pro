@@ -944,8 +944,7 @@ export default function DashboardPage() {
       {/* Footer */}
       <div className="pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
         <p>
-          © {new Date().getFullYear()} African Business Company for Development
-          SARL (A.B.C.D Ltd) — Tableau de bord interne
+          © {new Date().getFullYear()} 2mails.pro — Tableau de bord interne
         </p>
         <p className="flex items-center gap-1.5">
           <Calendar className="h-3.5 w-3.5" />

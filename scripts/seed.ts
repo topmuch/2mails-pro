@@ -1,6 +1,7 @@
 /**
  * Standalone seed script for production deployment.
- * Creates the default admin user from env vars ADMIN_EMAIL / ADMIN_PASSWORD.
+ * Creates a default tenant + admin user from env vars and seeds the
+ * per-tenant settings (Email / SEO / Maintenance).
  * Safe to run multiple times (idempotent).
  *
  * Usage: bun scripts/seed.ts
@@ -19,43 +20,90 @@ async function hashPassword(password: string): Promise<string> {
   return `${salt}:${hash}`;
 }
 
+async function ensureTenantSettings(tenantId: string, tenantName: string) {
+  const existingEmail = await db.emailSettings.findUnique({ where: { tenantId } }).catch(() => null);
+  if (!existingEmail) {
+    await db.emailSettings.create({
+      data: { tenantId, fromName: tenantName },
+    });
+    console.log("[seed] Default EmailSettings created.");
+  } else {
+    console.log("[seed] EmailSettings already exist.");
+  }
+
+  const existingSeo = await db.seoSettings.findUnique({ where: { tenantId } }).catch(() => null);
+  if (!existingSeo) {
+    await db.seoSettings.create({
+      data: {
+        tenantId,
+        siteTitle: `${tenantName} — CRM & Email Management`,
+        metaDescription: `${tenantName} — powered by 2mails.pro CRM SaaS`,
+        keywords: `${tenantName}, CRM, email management, 2mails.pro`,
+      },
+    });
+    console.log("[seed] Default SeoSettings created.");
+  } else {
+    console.log("[seed] SeoSettings already exist.");
+  }
+
+  const existingMaintenance = await db.maintenanceSettings
+    .findUnique({ where: { tenantId } })
+    .catch(() => null);
+  if (!existingMaintenance) {
+    await db.maintenanceSettings.create({
+      data: { tenantId },
+    });
+    console.log("[seed] Default MaintenanceSettings created.");
+  } else {
+    console.log("[seed] MaintenanceSettings already exist.");
+  }
+}
+
 async function main() {
-  const email = (process.env.ADMIN_EMAIL || "admin@abcd.com").toLowerCase();
-  const password = process.env.ADMIN_PASSWORD || "abcd2025";
-  const name = process.env.ADMIN_NAME || "Administrateur ABCD";
+  const email = (process.env.ADMIN_EMAIL || "admin@2mails.pro").toLowerCase();
+  const password = process.env.ADMIN_PASSWORD || "twomails2025";
+  const name = process.env.ADMIN_NAME || "Admin 2mails.pro";
+  const tenantName = process.env.TENANT_NAME || "2mails.pro Demo";
 
+  // 1. Ensure default tenant exists
+  const existingByName = await db.tenant
+    .findFirst({ where: { name: tenantName } })
+    .catch(() => null);
+  let tenant = existingByName;
+  if (!tenant) {
+    tenant = await db.tenant.create({
+      data: { name: tenantName, plan: "free", status: "active", maxUsers: 2 },
+    });
+    console.log(`[seed] Default tenant created: ${tenant.name} (${tenant.id})`);
+  } else {
+    console.log(`[seed] Default tenant already exists: ${tenant.name} (${tenant.id})`);
+  }
+
+  // 2. Ensure admin user exists, linked to that tenant
   const existing = await db.user.findUnique({ where: { email } }).catch(() => null);
-
   if (existing) {
     console.log(`[seed] Admin user already exists: ${email}`);
+    // Make sure they are linked to the default tenant
+    if (existing.tenantId !== tenant.id) {
+      await db.user.update({
+        where: { id: existing.id },
+        data: { tenantId: tenant.id, role: "admin" },
+      });
+      console.log(`[seed] Linked existing admin user to tenant "${tenant.name}".`);
+    }
   } else {
     const passwordHash = await hashPassword(password);
     await db.user.create({
-      data: { email, name, passwordHash, role: "admin" },
+      data: { email, name, passwordHash, role: "admin", tenantId: tenant.id },
     });
-    console.log(`[seed] Admin user created: ${email}`);
+    console.log(`[seed] Admin user created: ${email} (tenant: ${tenant.name})`);
     if (!process.env.ADMIN_PASSWORD) {
       console.log(`[seed] WARNING: using default password. Set ADMIN_PASSWORD env var in production.`);
     }
   }
 
-  // Seed default SEO settings if missing
-  const seo = await db.seoSettings.findUnique({ where: { id: "singleton" } }).catch(() => null);
-  if (!seo) {
-    await db.seoSettings.create({
-      data: {
-        id: "singleton",
-        siteTitle: "ABCD Ltd | Transit, Douane & Logistique à Dakar, Sénégal",
-        metaDescription:
-          "African Business Company for Development (A.B.C.D Ltd) — Transit, commissionnaire en douane, transport (air, mer, route, multimodal), supply chain, entreposage et dédouanement à Dakar, Sénégal.",
-        keywords:
-          "ABCD Ltd, transit Dakar, commissionnaire en douane Sénégal, freight forwarding Dakar, logistique Sénégal",
-      },
-    });
-    console.log("[seed] Default SEO settings created.");
-  } else {
-    console.log("[seed] SEO settings already exist.");
-  }
+  // 3. Seed default per-tenant settings
+  await ensureTenantSettings(tenant.id, tenant.name);
 
   await db.$disconnect();
   console.log("[seed] Done.");

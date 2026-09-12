@@ -127,7 +127,7 @@ export const SERVICES: Service[] = [
     desc: "Commissionnaire en douane agréé : formalités douanières, dédouanement import/export et gestion des régimes particuliers.",
     image: "/svc-transit.jpg",
     longDesc:
-      "En tant qu'établissement de Transit et commissionnaire en Douane agréé, ABCD Ltd prend en charge l'ensemble des formalités douanières de vos opérations d'import et d'export. Nos équipes expérimentées maîtrisent la réglementation douanière sénégalaise et les régimes particuliers (entrepôt sous douane, admission temporaire, transit, perfectionnement, etc.). Nous assurons la préparation et le dépôt des déclarations en douane, le calcul des droits et taxes, la gestion des régimes préférentiels et les relations avec les autorités douanières. Notre agrément garantit conformité, fiabilité et rapidité.",
+      "En tant qu'établissement de Transit et commissionnaire en Douane agréé, 2mails.pro prend en charge l'ensemble des formalités douanières de vos opérations d'import et d'export. Nos équipes expérimentées maîtrisent la réglementation douanière sénégalaise et les régimes particuliers (entrepôt sous douane, admission temporaire, transit, perfectionnement, etc.). Nous assurons la préparation et le dépôt des déclarations en douane, le calcul des droits et taxes, la gestion des régimes préférentiels et les relations avec les autorités douanières. Notre agrément garantit conformité, fiabilité et rapidité.",
     features: [
       "Commissionnaire en douane agréé",
       "Dédouanement import et export",
@@ -227,7 +227,7 @@ export const SERVICES: Service[] = [
     desc: "Organisation complète de vos flux de marchandises avec un réseau de sous-traitants agréés.",
     image: "/svc-freight.jpg",
     longDesc:
-      "En tant que freight forwarder, ABCD Ltd organise et coordonne l'ensemble de vos flux de marchandises à l'international. Nous agissons comme votre partenaire unique, en sélectionnant et en supervisant les meilleurs transporteurs, manutentionnaires et transitaires pour chaque étape de votre expédition. Notre réseau de sous-traitants agréés est encadré par des cahiers des charges stricts avec des obligations de part et d'autre, garantissant la qualité et la fiabilité de chaque opération. Nous négocions les tarifs, planifions les itinéraires, gérons la documentation et assurons le suivi de bout en bout.",
+      "En tant que freight forwarder, 2mails.pro organise et coordonne l'ensemble de vos flux de marchandises à l'international. Nous agissons comme votre partenaire unique, en sélectionnant et en supervisant les meilleurs transporteurs, manutentionnaires et transitaires pour chaque étape de votre expédition. Notre réseau de sous-traitants agréés est encadré par des cahiers des charges stricts avec des obligations de part et d'autre, garantissant la qualité et la fiabilité de chaque opération. Nous négocions les tarifs, planifions les itinéraires, gérons la documentation et assurons le suivi de bout en bout.",
     features: [
       "Organisation complète des flux internationaux",
       "Partenaire unique pour toutes vos expéditions",
@@ -252,7 +252,7 @@ export const SERVICES: Service[] = [
     desc: "Vente de solutions de transport adaptées à vos besoins, avec un accompagnement complet.",
     image: "/svc-routier.jpg",
     longDesc:
-      "ABCD Ltd propose la vente de solutions de transport adaptées aux besoins spécifiques de chaque client. Grâce à notre contrat de représentativité en Afrique de l'Ouest avec ARS Rental, nous mettons à votre disposition des engins et du matériel de manutention et transport de dernière génération. Que vous ayez besoin d'acquérir un véhicule utilitaire, un camion ou un équipement de transport spécialisé, nous vous accompagnons dans votre choix avec des solutions techniques et financières sur mesure.",
+      "2mails.pro propose la vente de solutions de transport adaptées aux besoins spécifiques de chaque client. Grâce à notre contrat de représentativité en Afrique de l'Ouest avec ARS Rental, nous mettons à votre disposition des engins et du matériel de manutention et transport de dernière génération. Que vous ayez besoin d'acquérir un véhicule utilitaire, un camion ou un équipement de transport spécialisé, nous vous accompagnons dans votre choix avec des solutions techniques et financières sur mesure.",
     features: [
       "Vente de véhicules utilitaires et camions",
       "Matériel de transport de dernière génération",
@@ -277,7 +277,7 @@ export const SERVICES: Service[] = [
     desc: "Vente ou location longue durée de matériel de manutention de dernière génération.",
     image: "/svc-entrepot.jpg",
     longDesc:
-      "En partenariat avec ARS Rental, ABCD Ltd propose la vente ou la location longue durée de matériel de manutention de dernière génération. Notre catalogue comprend chariots élévateurs, transpalettes, grues mobiles, nacelles élévatrices et tout équipement nécessaire à la manutention de vos marchandises. La location longue durée vous offre la flexibilité d'un équipement récent et maintenu sans les contraintes de la propriété, avec des conditions adaptées à votre activité.",
+      "En partenariat avec ARS Rental, 2mails.pro propose la vente ou la location longue durée de matériel de manutention de dernière génération. Notre catalogue comprend chariots élévateurs, transpalettes, grues mobiles, nacelles élévatrices et tout équipement nécessaire à la manutention de vos marchandises. La location longue durée vous offre la flexibilité d'un équipement récent et maintenu sans les contraintes de la propriété, avec des conditions adaptées à votre activité.",
     features: [
       "Chariots élévateurs et transpalettes",
       "Grues mobiles et nacelles élévatrices",
@@ -302,7 +302,7 @@ export const SERVICES: Service[] = [
     desc: "Vente ou location longue durée de matériel portuaire pour vos opérations au Port de Dakar.",
     image: "/svc-maritime.jpg",
     longDesc:
-      "ABCD Ltd, en tant que représentant d'ARS Rental en Afrique de l'Ouest, propose la vente ou la location longue durée de matériel portuaire de dernière génération. Notre offre couvre les grues de port, les reach stackers, les tracteurs portuaires, les chariots cavaliers et tout le matériel nécessaire à la manutention portuaire. Ces équipements sont indispensables pour les opérations de chargement et déchargement des navires, la manipulation des conteneurs et l'optimisation des flux dans les terminaux portuaires de Dakar.",
+      "2mails.pro, en tant que représentant d'ARS Rental en Afrique de l'Ouest, propose la vente ou la location longue durée de matériel portuaire de dernière génération. Notre offre couvre les grues de port, les reach stackers, les tracteurs portuaires, les chariots cavaliers et tout le matériel nécessaire à la manutention portuaire. Ces équipements sont indispensables pour les opérations de chargement et déchargement des navires, la manipulation des conteneurs et l'optimisation des flux dans les terminaux portuaires de Dakar.",
     features: [
       "Grues de port et reach stackers",
       "Tracteurs portuaires et chariots cavaliers",
@@ -415,7 +415,7 @@ export const PROCESS: ProcessStep[] = [
 
 export const FAQS = [
   {
-    q: "Quels types de marchandises ABCD Ltd prend-elle en charge ?",
+    q: "Quels types de marchandises 2mails.pro prend-elle en charge ?",
     a: "Nous traitons une large gamme de marchandises : conteneurisées, conventionnelles, colis lourds et hors gabarit, ainsi que les marchandises nécessitant un régime sous douane. Nos équipes adaptent les ressources à chaque type d'opération.",
   },
   {
@@ -424,11 +424,11 @@ export const FAQS = [
   },
   {
     q: "Êtes-vous agréés en tant que commissionnaire en douane ?",
-    a: "Oui. ABCD Ltd est un établissement de Transit et commissionnaire en Douane agréé. Nous gérons l'ensemble des formalités douanières import/export et les régimes particuliers.",
+    a: "Oui. 2mails.pro est un établissement de Transit et commissionnaire en Douane agréé. Nous gérons l'ensemble des formalités douanières import/export et les régimes particuliers.",
   },
   {
     q: "Comment obtenir un devis ?",
-    a: "Utilisez le formulaire de contact de la page Contact ou écrivez-nous à abcdev@gmail.com. Nos équipes vous répondront avec une proposition sur mesure dans les meilleurs délais.",
+    a: "Utilisez le formulaire de contact de la page Contact ou écrivez-nous à contact@2mails.pro. Nos équipes vous répondront avec une proposition sur mesure dans les meilleurs délais.",
   },
 ];
 
@@ -442,7 +442,7 @@ export const COMPANY = {
   phoneHref: "+221338645241",
   phoneSecondary: "+221 33 821 11 31",
   phoneSecondaryHref: "+221338211131",
-  email: "abcdev@gmail.com",
+  email: "contact@2mails.pro",
   founded: "2019",
 };
 

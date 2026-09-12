@@ -13,7 +13,7 @@ import {
 import { NAV_LINKS, SERVICES, COMPANY } from "@/lib/site-data";
 import { useLanguage } from "@/lib/i18n";
 
-const SITE_URL = "https://abcdsenegal.com/";
+const SITE_URL = "https://2mails.pro/";
 
 const NAV_LABEL_KEYS: Record<string, string> = {
   "/": "nav.home",
@@ -36,8 +36,8 @@ export function SiteFooter() {
             <div className="flex items-center gap-3">
               <div className="rounded-lg overflow-hidden bg-white p-1.5 shrink-0">
                 <img
-                  src="/logo-abcd-transparent.png"
-                  alt="Logo ABCD Ltd"
+                  src="/logo-2mails-transparent.png"
+                  alt="Logo 2mails.pro"
                   className="h-16 w-auto sm:h-20 object-contain"
                 />
               </div>
@@ -135,11 +135,11 @@ export function SiteFooter() {
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 group block rounded-xl bg-white p-3 shadow-lg ring-1 ring-white/20 hover:ring-accent/50 transition-all hover:scale-105"
-              aria-label="QR code abcdsenegal.com"
+              aria-label="QR code 2mails.pro"
             >
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=8&color=0c1f4a&bgcolor=ffffff&data=${encodeURIComponent(SITE_URL)}`}
-                alt="QR code vers abcdsenegal.com"
+                alt="QR code vers 2mails.pro"
                 width={120}
                 height={120}
                 className="h-[120px] w-[120px]"
@@ -152,7 +152,7 @@ export function SiteFooter() {
               rel="noopener noreferrer"
               className="mt-3 inline-flex items-center gap-1.5 text-xs text-white/60 hover:text-accent transition-colors"
             >
-              abcdsenegal.com
+              2mails.pro
               <ExternalLink className="h-3 w-3" />
             </a>
           </div>
@@ -160,8 +160,7 @@ export function SiteFooter() {
 
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-white/55 text-center sm:text-left">
-            © {new Date().getFullYear()} African Business Company for Development
-            SARL (A.B.C.D Ltd). {t("footer.rights")}
+            © {new Date().getFullYear()} 2mails.pro. {t("footer.rights")}
           </p>
           <div className="flex items-center gap-4">
             <Link

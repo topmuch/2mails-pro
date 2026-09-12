@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const SESSION_COOKIE = "abcd_session";
+const SESSION_COOKIE = "twomails_session";
+
+// Auth-related pages that must be reachable without a session.
+const PUBLIC_AUTH_PATHS = ["/login", "/register"];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // Auth pages — always allowed without a session.
+  if (PUBLIC_AUTH_PATHS.includes(pathname)) {
+    return NextResponse.next();
+  }
 
   // Protect /dashboard routes
   if (pathname.startsWith("/dashboard")) {
@@ -35,5 +43,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/dashboard"],
+  matcher: ["/dashboard/:path*", "/dashboard", "/login", "/register"],
 };

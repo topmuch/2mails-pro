@@ -407,8 +407,8 @@ export default function MaintenanceAdminPage() {
               <div className="bg-gradient-to-b from-[#0c1f4a] via-[#14306e] to-[#0c1f4a] px-5 py-8 text-center">
                 <div className="mx-auto mb-3 h-12 w-12 rounded-lg bg-white p-1.5 shadow-lg">
                   <img
-                    src="/logo-abcd-transparent.png"
-                    alt="ABCD Ltd"
+                    src="/logo-2mails-transparent.png"
+                    alt="2mails.pro"
                     className="h-full w-full object-contain"
                   />
                 </div>

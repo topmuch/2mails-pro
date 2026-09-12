@@ -87,8 +87,8 @@ export default function DashboardLayout({
             <div className="h-11 w-11 rounded-lg overflow-hidden bg-white p-1 ring-1 ring-border shrink-0">
               { }
               <img
-                src="/logo-abcd-transparent.png"
-                alt="Logo ABCD Ltd"
+                src="/logo-2mails-transparent.png"
+                alt="Logo 2mails.pro"
                 className="h-full w-full object-contain"
               />
             </div>
@@ -139,8 +139,8 @@ export default function DashboardLayout({
           <div className="h-10 w-10 rounded-lg overflow-hidden bg-white p-1 ring-1 ring-border">
             { }
             <img
-              src="/logo-abcd-transparent.png"
-              alt="Logo ABCD Ltd"
+              src="/logo-2mails-transparent.png"
+              alt="Logo 2mails.pro"
               className="h-full w-full object-contain"
             />
           </div>
@@ -180,8 +180,8 @@ export default function DashboardLayout({
                   <div className="h-9 w-9 rounded-lg overflow-hidden bg-white p-1 ring-1 ring-border">
                     { }
                     <img
-                      src="/logo-abcd-transparent.png"
-                      alt="Logo ABCD Ltd"
+                      src="/logo-2mails-transparent.png"
+                      alt="Logo 2mails.pro"
                       className="h-full w-full object-contain"
                     />
                   </div>

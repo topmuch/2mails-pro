@@ -351,7 +351,7 @@ export default function EquipePage() {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="t-email">Email</Label>
-                      <Input id="t-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="membre@abcd.com" />
+                      <Input id="t-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="membre@2mails.pro" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="t-phone">Téléphone</Label>

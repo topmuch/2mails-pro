@@ -550,7 +550,7 @@ export default function ContactPage() {
                   <div className="absolute top-4 left-4 z-10 bg-background/95 backdrop-blur-sm rounded-lg shadow-md ring-1 ring-border px-4 py-3 max-w-xs">
                     <div className="flex items-center gap-2 text-sm font-bold text-foreground">
                       <MapPin className="h-4 w-4 text-accent" />
-                      ABCD Ltd
+                      2mails.pro
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       {COMPANY.addressLine1}<br />

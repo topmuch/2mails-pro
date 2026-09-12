@@ -208,7 +208,7 @@ export default function EmailPage() {
               Email &amp; Notifications
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Configurez le serveur SMTP et les notifications automatiques d&apos;ABCD Ltd
+              Configurez le serveur SMTP et les notifications automatiques d&apos;2mails.pro
             </p>
           </div>
         </div>
@@ -292,7 +292,7 @@ export default function EmailPage() {
                     id="smtpUser"
                     value={data.smtpUser}
                     onChange={(e) => setData({ ...data, smtpUser: e.target.value })}
-                    placeholder="abcdev@gmail.com"
+                    placeholder="contact@2mails.pro"
                     autoComplete="off"
                   />
                 </div>
@@ -321,7 +321,7 @@ export default function EmailPage() {
                     type="email"
                     value={data.fromEmail}
                     onChange={(e) => setData({ ...data, fromEmail: e.target.value })}
-                    placeholder="noreply@abcd-ltd.com"
+                    placeholder="noreply@2mails.pro"
                   />
                 </div>
 
@@ -331,7 +331,7 @@ export default function EmailPage() {
                     id="fromName"
                     value={data.fromName}
                     onChange={(e) => setData({ ...data, fromName: e.target.value })}
-                    placeholder="ABCD Ltd"
+                    placeholder="2mails.pro"
                   />
                 </div>
               </div>
@@ -379,7 +379,7 @@ export default function EmailPage() {
                     id="imapUser"
                     value={data.imapUser}
                     onChange={(e) => setData({ ...data, imapUser: e.target.value })}
-                    placeholder="contact@abcdsenegal.com"
+                    placeholder="contact@2mails.pro"
                   />
                 </div>
                 <div className="space-y-2">
@@ -425,7 +425,7 @@ export default function EmailPage() {
                   type="email"
                   value={data.notifyEmail}
                   onChange={(e) => setData({ ...data, notifyEmail: e.target.value })}
-                  placeholder="abcdev@gmail.com"
+                  placeholder="contact@2mails.pro"
                 />
                 <p className="text-xs text-muted-foreground">
                   Tous les emails de notification seront envoyés à cette adresse.

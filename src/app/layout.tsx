@@ -18,45 +18,45 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ABCD Ltd | Transit, Douane & Logistique à Dakar, Sénégal",
+  title: "2mails.pro | CRM SaaS — Gestion clients, équipe & messagerie",
   description:
-    "African Business Company for Development (A.B.C.D Ltd) — Transit, commissionnaire en douane, transport (air, mer, route, multimodal), supply chain, entreposage et dédouanement à Dakar, Sénégal.",
+    "2mails.pro — CRM SaaS pour gérer vos clients, votre équipe, vos statistiques, votre messagerie et vos paramètres depuis un tableau de bord unifié.",
   keywords: [
-    "ABCD Ltd",
-    "transit Dakar",
-    "commissionnaire en douane Sénégal",
-    "freight forwarding Dakar",
-    "logistique Sénégal",
-    "transport multimodal Afrique de l'Ouest",
-    "dédouanement Dakar",
-    "entrepôt sous douane",
-    "customs broker Senegal",
+    "2mails.pro",
+    "CRM SaaS",
+    "gestion clients",
+    "gestion équipe",
+    "messagerie intégrée",
+    "tableau de bord CRM",
+    "CRM Dakar Sénégal",
+    "logiciel CRM",
+    "platform CRM",
   ],
-  authors: [{ name: "A.B.C.D Ltd" }],
+  authors: [{ name: "2mails.pro" }],
   icons: {
-    icon: "/logo-abcd-transparent.png",
-    apple: "/logo-abcd-transparent.png",
+    icon: "/logo-2mails-transparent.png",
+    apple: "/logo-2mails-transparent.png",
   },
   openGraph: {
-    title: "ABCD Ltd | Transit, Douane & Logistique à Dakar",
+    title: "2mails.pro | CRM SaaS — Tableau de bord unifié",
     description:
-      "Solutions sur mesure de transit, transport et logistique depuis Dakar vers l'Afrique de l'Ouest. Commissionnaire en douane agréé.",
-    siteName: "A.B.C.D Ltd",
+      "Gérez vos clients, votre équipe, votre messagerie et vos statistiques depuis un tableau de bord unifié. CRM SaaS moderne et intuitif.",
+    siteName: "2mails.pro",
     type: "website",
     locale: "fr_SN",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ABCD Ltd | Transit & Logistique à Dakar",
+    title: "2mails.pro | CRM SaaS",
     description:
-      "Transit, commissionnaire en douane, transport et logistique à Dakar, Sénégal.",
+      "CRM SaaS pour gérer clients, équipe, messagerie et statistiques depuis un tableau de bord unifié.",
   },
 };
 
 const themeScript = `
 (function() {
   try {
-    var stored = localStorage.getItem('abcd-theme');
+    var stored = localStorage.getItem('twomails-theme');
     var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     var theme = stored || (prefersDark ? 'dark' : 'light');
     if (theme === 'dark') document.documentElement.classList.add('dark');

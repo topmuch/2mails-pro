@@ -111,13 +111,13 @@ function LoginForm() {
             <div className="flex items-center gap-3">
               <div className="rounded-xl overflow-hidden bg-white p-2 shadow-lg">
                 <img
-                  src="/logo-abcd-transparent.png"
-                  alt="Logo ABCD Ltd"
+                  src="/logo-2mails-transparent.png"
+                  alt="Logo 2mails.pro"
                   className="h-20 w-auto sm:h-24 object-contain"
                 />
               </div>
               <div className="text-xs text-white/60 uppercase tracking-widest">
-                ABCD Ltd
+                2mails.pro
               </div>
             </div>
             <Link
@@ -145,7 +145,7 @@ function LoginForm() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="mt-5 text-white/75 leading-relaxed"
             >
-              Espace d&apos;administration ABCD Ltd. Gérez vos clients, votre équipe,
+              Espace d&apos;administration 2mails.pro. Gérez vos clients, votre équipe,
               vos statistiques et vos paramètres depuis un tableau de bord unifié.
             </motion.p>
 
@@ -168,7 +168,7 @@ function LoginForm() {
 
           {/* Footer */}
           <div className="flex items-center justify-between text-xs text-white/40">
-            <span>© {new Date().getFullYear()} ABCD Ltd — Dakar, Sénégal</span>
+            <span>© {new Date().getFullYear()} 2mails.pro — Dakar, Sénégal</span>
             <span>Depuis 2019</span>
           </div>
         </div>
@@ -184,8 +184,8 @@ function LoginForm() {
         <div className="lg:hidden flex items-center justify-between p-5 relative z-10">
           <div className="rounded-xl overflow-hidden bg-white p-1.5 ring-1 ring-border shadow">
             <img
-              src="/logo-abcd-transparent.png"
-              alt="Logo ABCD Ltd"
+              src="/logo-2mails-transparent.png"
+              alt="Logo 2mails.pro"
               className="h-16 w-auto object-contain"
             />
           </div>
@@ -210,7 +210,7 @@ function LoginForm() {
                 Connexion
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                Connectez-vous à votre espace d&apos;administration ABCD Ltd.
+                Connectez-vous à votre espace d&apos;administration 2mails.pro.
               </p>
             </div>
 
@@ -227,7 +227,7 @@ function LoginForm() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="vous@abcd.com"
+                    placeholder="vous@2mails.pro"
                     className="pl-10 h-11"
                     autoComplete="email"
                     required
@@ -286,18 +286,27 @@ function LoginForm() {
             <div className="mt-6 flex items-start gap-2.5 rounded-lg bg-secondary/60 p-3.5 ring-1 ring-border">
               <ShieldCheck className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Accès réservé à l&apos;équipe ABCD Ltd. Vos identifiants sont
+                Accès réservé à l&apos;équipe 2mails.pro. Vos identifiants sont
                 confidentiels et sécurisés.
               </p>
             </div>
 
-            {/* Help link */}
-            <p className="mt-6 text-center text-sm text-muted-foreground">
-              Besoin d&apos;aide pour vous connecter ?{" "}
-              <Link href="/contact" className="text-primary hover:underline font-medium">
-                Contactez-nous
-              </Link>
-            </p>
+            {/* Help link + Register link */}
+            <div className="mt-6 space-y-3 text-center text-sm text-muted-foreground">
+              <p>
+                Besoin d&apos;aide pour vous connecter ?{" "}
+                <Link href="/contact" className="text-primary hover:underline font-medium">
+                  Contactez-nous
+                </Link>
+              </p>
+              <p className="border-t border-border pt-3">
+                Pas encore de compte ?{" "}
+                <Link href="/register" className="text-accent hover:underline font-semibold">
+                  S&apos;inscrire
+                  <ArrowRight className="inline-block ml-1 h-3.5 w-3.5 align-text-bottom" />
+                </Link>
+              </p>
+            </div>
           </motion.div>
         </div>
       </div>

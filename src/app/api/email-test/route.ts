@@ -42,19 +42,19 @@ export async function POST(req: NextRequest) {
     });
 
     const fromEmail = settings.fromEmail || settings.smtpUser;
-    const fromName = settings.fromName || "ABCD Ltd";
+    const fromName = settings.fromName || "2mails.pro";
     const toEmail = body.to || settings.notifyEmail;
 
     const info = await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
       to: toEmail,
-      subject: "[ABCD Ltd] Email de test",
-      text: `Ceci est un email de test depuis ABCD Ltd.\n\nSi vous recevez cet email, la configuration SMTP fonctionne correctement.\n\nConfiguration utilisée :\n- Host: ${settings.smtpHost}\n- Port: ${settings.smtpPort}\n- User: ${settings.smtpUser}\n- From: ${fromEmail}\n- To: ${toEmail}`,
+      subject: "[2mails.pro] Email de test",
+      text: `Ceci est un email de test depuis 2mails.pro.\n\nSi vous recevez cet email, la configuration SMTP fonctionne correctement.\n\nConfiguration utilisée :\n- Host: ${settings.smtpHost}\n- Port: ${settings.smtpPort}\n- User: ${settings.smtpUser}\n- From: ${fromEmail}\n- To: ${toEmail}`,
       html: `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: #0c1f4a; padding: 24px; border-radius: 12px 12px 0 0;">
     <h1 style="color: #ffffff; margin: 0;">Email de test</h1>
-    <p style="color: #ca8a04; margin: 8px 0 0;">ABCD Ltd</p>
+    <p style="color: #ca8a04; margin: 8px 0 0;">2mails.pro</p>
   </div>
   <div style="background: #fff; padding: 24px; border: 1px solid #e2e8f0; border-top: none;">
     <p style="color: #334155; font-size: 16px;">Si vous recevez cet email, la configuration SMTP fonctionne correctement. ✅</p>

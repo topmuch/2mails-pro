@@ -117,7 +117,7 @@ export default function SeoPage() {
               Paramètres SEO
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Optimisez le référencement du site ABCD Ltd
+              Optimisez le référencement du site 2mails.pro
             </p>
           </div>
         </div>
@@ -149,7 +149,7 @@ export default function SeoPage() {
                 id="siteTitle"
                 value={data.siteTitle}
                 onChange={(e) => setData({ ...data, siteTitle: e.target.value })}
-                placeholder="ABCD Ltd | Transit, Douane & Logistique à Dakar..."
+                placeholder="2mails.pro | CRM SaaS — Gestion clients & équipe..."
                 maxLength={120}
               />
               <p className="text-xs text-muted-foreground">Idéalement entre 50 et 60 caractères.</p>
@@ -206,7 +206,7 @@ export default function SeoPage() {
                 id="ogTitle"
                 value={data.ogTitle || ""}
                 onChange={(e) => setData({ ...data, ogTitle: e.target.value })}
-                placeholder="ABCD Ltd | Transit & Logistique à Dakar"
+                placeholder="2mails.pro | CRM SaaS — Tableau de bord unifié"
               />
             </div>
             <div className="space-y-2">
@@ -251,7 +251,7 @@ export default function SeoPage() {
                 id="twitter"
                 value={data.twitterHandle || ""}
                 onChange={(e) => setData({ ...data, twitterHandle: e.target.value })}
-                placeholder="@abcdltd"
+                placeholder="@2mailspro"
               />
             </div>
           </CardContent>
@@ -269,10 +269,10 @@ export default function SeoPage() {
           <CardContent>
             <div className="rounded-lg border border-border p-4 bg-white">
               <div className="text-xs text-emerald-700 truncate">
-                https://abcd-ltd.com<span className="text-muted-foreground"> › accueil</span>
+                https://2mails.pro<span className="text-muted-foreground"> › accueil</span>
               </div>
               <div className="text-lg text-blue-700 hover:underline cursor-pointer mt-1 line-clamp-1">
-                {data.siteTitle || "Titre du site — ABCD Ltd"}
+                {data.siteTitle || "Titre du site — 2mails.pro"}
               </div>
               <div className="text-sm text-muted-foreground mt-1 line-clamp-2">
                 {data.metaDescription || "Méta-description du site apparaîtra ici..."}

@@ -90,11 +90,11 @@ export async function sendContactNotification(data: {
     console.log("[email] Contact notification disabled or no notifyEmail");
     return false;
   }
-  const fromEmail = settings.fromEmail || settings.smtpUser || "noreply@abcd.com";
-  const fromName = settings.fromName || "ABCD Ltd";
+  const fromEmail = settings.fromEmail || settings.smtpUser || "noreply@2mails.pro";
+  const fromName = settings.fromName || "2mails.pro";
 
-  const subject = `[ABCD Ltd] Nouveau message de contact${data.subject ? ` — ${data.subject}` : ""}`;
-  const text = `Nouveau message de contact reçu sur le site ABCD Ltd.
+  const subject = `[2mails.pro] Nouveau message de contact${data.subject ? ` — ${data.subject}` : ""}`;
+  const text = `Nouveau message de contact reçu sur le site 2mails.pro.
 
 De : ${data.name} <${data.email}>
 Téléphone : ${data.phone || "—"}
@@ -110,7 +110,7 @@ Cet email a été envoyé automatiquement depuis le formulaire de contact du sit
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8fafc;">
   <div style="background: #0c1f4a; padding: 24px; border-radius: 12px 12px 0 0;">
     <h1 style="color: #ffffff; margin: 0; font-size: 22px;">Nouveau message de contact</h1>
-    <p style="color: #ca8a04; margin: 8px 0 0; font-size: 14px;">ABCD Ltd — Site web</p>
+    <p style="color: #ca8a04; margin: 8px 0 0; font-size: 14px;">2mails.pro — Site web</p>
   </div>
   <div style="background: #ffffff; padding: 24px; border: 1px solid #e2e8f0; border-top: none;">
     <table style="width: 100%; font-size: 14px; color: #334155;">
@@ -124,7 +124,7 @@ Cet email a été envoyé automatiquement depuis le formulaire de contact du sit
     <div style="background: #f8fafc; padding: 16px; border-radius: 8px; white-space: pre-wrap; color: #334155; line-height: 1.6;">${escapeHtml(data.message)}</div>
   </div>
   <div style="background: #f1f5f9; padding: 16px 24px; border-radius: 0 0 12px 12px; font-size: 12px; color: #64748b; text-align: center;">
-    Email automatique envoyé depuis le formulaire de contact du site ABCD Ltd
+    Email automatique envoyé depuis le formulaire de contact du site 2mails.pro
   </div>
 </div>`;
 
@@ -153,11 +153,11 @@ export async function sendAppointmentNotification(data: {
     console.log("[email] Appointment notification disabled or no notifyEmail");
     return false;
   }
-  const fromEmail = settings.fromEmail || settings.smtpUser || "noreply@abcd.com";
-  const fromName = settings.fromName || "ABCD Ltd";
+  const fromEmail = settings.fromEmail || settings.smtpUser || "noreply@2mails.pro";
+  const fromName = settings.fromName || "2mails.pro";
 
-  const subject = `[ABCD Ltd] Nouvelle demande de rendez-vous — ${data.name}`;
-  const text = `Nouvelle demande de rendez-vous reçue sur le site ABCD Ltd.
+  const subject = `[2mails.pro] Nouvelle demande de rendez-vous — ${data.name}`;
+  const text = `Nouvelle demande de rendez-vous reçue sur le site 2mails.pro.
 
 De : ${data.name} <${data.email}>
 Téléphone : ${data.phone || "—"}
@@ -176,7 +176,7 @@ Cet email a été envoyé automatiquement depuis le formulaire de rendez-vous du
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8fafc;">
   <div style="background: #0c1f4a; padding: 24px; border-radius: 12px 12px 0 0;">
     <h1 style="color: #ffffff; margin: 0; font-size: 22px;">Nouvelle demande de rendez-vous</h1>
-    <p style="color: #ca8a04; margin: 8px 0 0; font-size: 14px;">ABCD Ltd — Site web</p>
+    <p style="color: #ca8a04; margin: 8px 0 0; font-size: 14px;">2mails.pro — Site web</p>
   </div>
   <div style="background: #ffffff; padding: 24px; border: 1px solid #e2e8f0; border-top: none;">
     <table style="width: 100%; font-size: 14px; color: #334155;">
@@ -193,7 +193,7 @@ Cet email a été envoyé automatiquement depuis le formulaire de rendez-vous du
     <div style="background: #f8fafc; padding: 16px; border-radius: 8px; white-space: pre-wrap; color: #334155; line-height: 1.6;">${escapeHtml(data.message)}</div>
   </div>
   <div style="background: #f1f5f9; padding: 16px 24px; border-radius: 0 0 12px 12px; font-size: 12px; color: #64748b; text-align: center;">
-    Email automatique envoyé depuis le formulaire de rendez-vous du site ABCD Ltd
+    Email automatique envoyé depuis le formulaire de rendez-vous du site 2mails.pro
   </div>
 </div>`;
 

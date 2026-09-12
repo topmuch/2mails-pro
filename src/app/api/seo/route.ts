@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
 const DEFAULT_SEO = {
-  siteTitle: "ABCD Ltd | Transit, Douane & Logistique à Dakar, Sénégal",
+  siteTitle: "2mails.pro | CRM SaaS — Gestion clients, équipe & messagerie",
   metaDescription:
-    "African Business Company for Development (A.B.C.D Ltd) — Transit, commissionnaire en douane, transport (air, mer, route, multimodal), supply chain, entreposage et dédouanement à Dakar, Sénégal.",
+    "2mails.pro — CRM SaaS pour gérer vos clients, votre équipe, vos statistiques, votre messagerie et vos paramètres depuis un tableau de bord unifié.",
   keywords:
-    "ABCD Ltd, transit Dakar, commissionnaire en douane Sénégal, freight forwarding Dakar, logistique Sénégal, transport multimodal Afrique de l'Ouest, dédouanement Dakar, entrepôt sous douane, customs broker Senegal",
-  ogTitle: "ABCD Ltd | Transit & Logistique à Dakar",
+    "2mails.pro, CRM SaaS, gestion clients, gestion équipe, messagerie intégrée, tableau de bord CRM, CRM Dakar Sénégal, logiciel CRM, platform CRM",
+  ogTitle: "2mails.pro | CRM SaaS — Tableau de bord unifié",
   ogDescription:
-    "Solutions sur mesure de transit, transport et logistique depuis Dakar vers l'Afrique de l'Ouest.",
+    "Gérez vos clients, votre équipe, votre messagerie et vos statistiques depuis un tableau de bord unifié. CRM SaaS moderne et intuitif.",
   googleAnalyticsId: "",
   twitterHandle: "",
 };

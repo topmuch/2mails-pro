@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   return NextResponse.json({
     ok: true,
-    service: "ABCD Ltd — Contact API",
+    service: "2mails.pro — Contact API",
     methods: ["POST"],
   });
 }

@@ -144,8 +144,8 @@ export default function MaintenancePage() {
         >
           <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl bg-white p-3 shadow-2xl ring-1 ring-white/40">
             <img
-              src="/logo-abcd-transparent.png"
-              alt="ABCD Ltd"
+              src="/logo-2mails-transparent.png"
+              alt="2mails.pro"
               className="h-full w-full object-contain"
             />
           </div>
@@ -236,7 +236,7 @@ export default function MaintenancePage() {
             variant="outline"
             className="gap-2 border-white/30 bg-white/5 text-white hover:bg-white/10 hover:text-white"
           >
-            <a href="mailto:abcdev@gmail.com">
+            <a href="mailto:contact@2mails.pro">
               <Mail className="h-4 w-4" />
               {contactLabel}
             </a>
@@ -259,7 +259,7 @@ export default function MaintenancePage() {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="mt-10 text-xs text-white/50"
         >
-          ABCD Ltd — Dakar, Sénégal
+          2mails.pro — Dakar, Sénégal
         </motion.div>
       </div>
     </main>

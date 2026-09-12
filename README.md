@@ -1,7 +1,6 @@
-# ABCD Ltd — Site vitrine & Dashboard
+# 2mails.pro — CRM SaaS & Dashboard
 
-Site web de **African Business Company for Development SARL (A.B.C.D Ltd)** —
-transit, commissionnaire en douane, transport et logistique à Dakar, Sénégal.
+Plateforme **2mails.pro** — CRM SaaS multi-tenant pour gérer vos clients, votre équipe, votre messagerie, vos statistiques et vos paramètres depuis un tableau de bord unifié.
 
 Déploiement optimisé pour **Coolify** (ou tout environnement Docker).
 
@@ -34,7 +33,7 @@ scripts/seed.ts       # Seed : crée l'admin + SEO par défaut
 ### Option A — Dockerfile (recommandé)
 
 1. Dans Coolify : **New Resource → Application**
-2. Connectez votre dépôt GitHub : `github.com/topmuch/ABCD`
+2. Connectez votre dépôt GitHub
 3. Coolify détecte automatiquement le `Dockerfile`
 4. Configurez les variables d'environnement (voir ci-dessous)
 5. Ajoutez un **volume persistant** sur `/app/db` (pour la base SQLite)
@@ -44,7 +43,7 @@ scripts/seed.ts       # Seed : crée l'admin + SEO par défaut
 
 1. Dans Coolify : **New Resource → Docker Compose based**
 2. Pointez vers le repo — Coolify utilise automatiquement `docker-compose.yml`
-3. Le volume `abcd-db` est créé automatiquement
+3. Le volume `twomails-db` est créé automatiquement
 4. Configurez les variables d'environnement
 5. Déployez
 
@@ -52,9 +51,10 @@ scripts/seed.ts       # Seed : crée l'admin + SEO par défaut
 
 | Variable | Description | Défaut |
 |----------|-------------|--------|
-| `ADMIN_EMAIL` | Email du compte admin | `admin@abcd.com` |
-| `ADMIN_PASSWORD` | Mot de passe admin (**à changer !**) | `abcd2025` |
-| `ADMIN_NAME` | Nom affiché de l'admin | `Administrateur ABCD` |
+| `ADMIN_EMAIL` | Email du compte admin | `admin@2mails.pro` |
+| `ADMIN_PASSWORD` | Mot de passe admin (**à changer !**) | `twomails2025` |
+| `ADMIN_NAME` | Nom affiché de l'admin | `Admin 2mails.pro` |
+| `TENANT_NAME` | Nom du tenant par défaut | `2mails.pro Demo` |
 | `DATABASE_URL` | Chemin de la base SQLite | `file:/app/db/custom.db` |
 | `NODE_ENV` | Environnement | `production` |
 | `PORT` | Port d'écoute | `3000` |
@@ -85,7 +85,7 @@ bun run db:generate
 # Créer/migrer la base de données
 bun run db:push
 
-# Créer l'utilisateur admin (admin@abcd.com / abcd2025)
+# Créer l'utilisateur admin (admin@2mails.pro / twomails2025)
 bun run seed
 
 # Lancer le serveur de développement
@@ -102,4 +102,4 @@ Le site est accessible sur http://localhost:3000
 
 ## 📜 Licence
 
-© ABCD Ltd — Tous droits réservés.
+© 2mails.pro — Tous droits réservés.

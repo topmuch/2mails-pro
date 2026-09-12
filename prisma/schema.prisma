@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// 2mails.pro — CRM SaaS Multi-tenant
+// Prisma schema
 
 generator client {
   provider = "prisma-client-js"
@@ -13,36 +10,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============ TENANT (Organisation) ============
+model Tenant {
+  id          String   @id @default(cuid())
+  name        String
+  domain      String?  // e.g. acme.2mails.pro
+  plan        String   @default("free") // free | pro | business
+  status      String   @default("active") // active | suspended | cancelled
+  maxUsers    Int      @default(2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  clients     Client[]
+  teamMembers TeamMember[]
+  messages    ContactMessage[]
+  appointments Appointment[]
+  emailSettings EmailSettings?
+  seoSettings   SeoSettings?
+  maintenance   MaintenanceSettings?
+  deals         Deal[]
+  tasks         Task[]
+  interactions  Interaction[]
+  pageViews     PageView[]
+  clickEvents   ClickEvent[]
+}
+
+// ============ USER ============
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
   name         String?
   passwordHash String?
-  role         String   @default("admin")
+  role         String   @default("admin") // super_admin | admin | manager | agent
+  tenantId     String?
+  isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ContactMessage {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  phone     String?
-  subject   String?
-  message   String
-  createdAt DateTime @default(now())
-}
-
+// ============ CLIENT ============
 model Client {
   id        String   @id @default(cuid())
   name      String
@@ -53,98 +62,210 @@ model Client {
   service   String?
   status    String   @default("prospect") // prospect | actif | inactif
   notes     String?
+  tenantId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id])
+  deals        Deal[]
+  tasks        Task[]
+  interactions Interaction[]
+  appointments Appointment[]
 }
 
+// ============ DEAL (Pipeline) ============
+model Deal {
+  id        String   @id @default(cuid())
+  title     String
+  value     Float    @default(0)
+  stage     String   @default("lead") // lead | qualified | proposal | negotiation | won | lost
+  clientId  String
+  tenantId  String
+  assignedTo String?
+  closeDate DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  client   Client @relation(fields: [clientId], references: [id])
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+}
+
+// ============ TASK (Tâches) ============
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      String    @default("pending") // pending | in_progress | done | cancelled
+  priority    String    @default("medium") // low | medium | high
+  dueDate     DateTime?
+  clientId    String?
+  tenantId    String
+  assignedTo  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  client   Client? @relation(fields: [clientId], references: [id])
+  tenant   Tenant  @relation(fields: [tenantId], references: [id])
+}
+
+// ============ INTERACTION (Timeline) ============
+model Interaction {
+  id        String   @id @default(cuid())
+  type      String   // call | email | meeting | note | deal
+  content   String
+  clientId  String
+  tenantId  String
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  client   Client @relation(fields: [clientId], references: [id])
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+}
+
+// ============ TEAM MEMBER ============
 model TeamMember {
-  id             String   @id @default(cuid())
-  name           String
-  role           String
-  email          String?
-  phone          String?
-  bio            String?
-  photoUrl       String?
+  id              String   @id @default(cuid())
+  name            String
+  role            String
+  email           String?
+  phone           String?
+  bio             String?
+  photoUrl        String?
   yearsExperience Int?
-  order          Int      @default(0)
-  active         Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-}
-
-model SeoSettings {
-  id              String   @id @default("singleton")
-  siteTitle       String
-  metaDescription String
-  keywords        String
-  ogTitle         String?
-  ogDescription   String?
-  googleAnalyticsId String?
-  twitterHandle   String?
+  order           Int      @default(0)
+  active          Boolean  @default(true)
+  tenantId        String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
+// ============ CONTACT MESSAGE ============
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  message   String
+  tenantId  String
+  createdAt DateTime @default(now())
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+}
+
+// ============ APPOINTMENT ============
+model Appointment {
+  id            String   @id @default(cuid())
+  name          String
+  email         String
+  phone         String?
+  company       String?
+  subject       String?
+  preferredDate String?
+  preferredTime String?
+  message       String
+  status        String   @default("pending") // pending | confirmed | cancelled
+  tenantId      String
+  clientId      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant   Tenant  @relation(fields: [tenantId], references: [id])
+  client   Client? @relation(fields: [clientId], references: [id])
+}
+
+// ============ SEO SETTINGS ============
+model SeoSettings {
+  id                String   @id @default(cuid())
+  tenantId          String   @unique
+  siteTitle         String
+  metaDescription   String
+  keywords          String
+  ogTitle           String?
+  ogDescription     String?
+  googleAnalyticsId String?
+  twitterHandle     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+}
+
+// ============ PAGE VIEW (Analytics) ============
 model PageView {
   id        String   @id @default(cuid())
   path      String
   referrer  String?
   country   String?
   city      String?
-  device    String   // desktop | mobile | tablet
+  device    String
   browser   String?
   sessionId String
+  tenantId  String
   createdAt DateTime @default(now())
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
+// ============ CLICK EVENT ============
 model ClickEvent {
   id        String   @id @default(cuid())
-  type      String   // whatsapp | phone | email
+  type      String
   page      String
   sessionId String
+  tenantId  String
   createdAt DateTime @default(now())
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
-model Appointment {
-  id          String   @id @default(cuid())
-  name        String
-  email       String
-  phone       String?
-  company     String?
-  subject     String?
-  preferredDate String?
-  preferredTime String?
-  message     String
-  status      String   @default("pending") // pending | confirmed | cancelled
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
+// ============ EMAIL SETTINGS ============
 model EmailSettings {
-  id                String   @id @default("singleton")
+  id                String   @id @default(cuid())
+  tenantId          String   @unique
   smtpHost          String?
   smtpPort          Int?
   smtpUser          String?
   smtpPassword      String?
   fromEmail         String?
   fromName          String?
-  notifyEmail       String?  // email to receive notifications
+  notifyEmail       String?
   notifyOnContact   Boolean  @default(true)
   notifyOnAppointment Boolean @default(true)
-  imapHost          String?  // IMAP server (e.g. imap.gmail.com)
-  imapPort          Int?     // usually 993
-  imapUser          String?  // often same as smtpUser
-  imapPassword      String?  // often same as smtpPassword
+  imapHost          String?
+  imapPort          Int?
+  imapUser          String?
+  imapPassword      String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
+// ============ MAINTENANCE SETTINGS ============
 model MaintenanceSettings {
-  id              String   @id @default("singleton")
+  id              String   @id @default(cuid())
+  tenantId        String   @unique
   enabled         Boolean  @default(false)
   messageFr       String   @default("Site en maintenance. Nous serons de retour très bientôt.")
   messageEn       String   @default("Site under maintenance. We will be back very soon.")
   endTime         DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+}
+
+// ============ INVITATION (SaaS) ============
+model Invitation {
+  id        String   @id @default(cuid())
+  email     String
+  tenantId  String
+  role      String   @default("agent")
+  token     String   @unique
+  status    String   @default("pending") // pending | accepted | expired
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 }

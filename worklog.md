@@ -638,3 +638,271 @@ Stage Summary:
 - Two existing FR entries (`contact.address`, `contact.addressDesc`) were refreshed to reflect the new SICAP Liberté 1 office address (prior FR values still referenced the old "Cité keur Gorgui, Sacré Coeur" location).
 - The `lang` variable from `useLanguage()` is destructured but not actively referenced in these pages (matches the existing pattern on the homepage and is eslint-clean).
 - Files lint-clean and type-clean — ready to commit + push to GitHub.
+
+---
+Task ID: multi-tenant-auth
+Agent: Sub-agent (general-purpose)
+Task: Build multi-tenant authentication system for the 2mails.pro CRM SaaS (Tenant + User.tenantId + Invitation)
+
+Work Log:
+- Read worklog.md for project context (ABCD Ltd showcase site evolving into 2mails.pro multi-tenant CRM SaaS), the existing `src/lib/auth.ts` (single-tenant session cookie + SHA-256 salted hash via `crypto.subtle`), `src/middleware.ts` (only matched `/dashboard`), `src/app/login/page.tsx` (split-screen navy-gradient login), `scripts/seed.ts` (single admin user + singleton SEO settings), `prisma/schema.prisma` (already updated with Tenant, User.tenantId, Invitation, EmailSettings.tenantId unique, SeoSettings.tenantId unique, MaintenanceSettings.tenantId unique), existing API auth routes (`/api/auth/login`, `/me`, `/logout`), `src/lib/db.ts` (Prisma singleton), and confirmed the Prisma client in `node_modules/.prisma/client` already contains the `Tenant` model (`TenantDelegate` present ×2).
+- Confirmed 2mails.pro branding assets already in `/public`: `logo-2mails-transparent.png`, `logo-2mails.png`.
+
+FILE 1 — `src/lib/auth.ts` (rewritten):
+- `SESSION_COOKIE` renamed `"abcd_session"` → `"twomails_session"`.
+- `SessionUser` type now includes `tenantId: string | null` (kept nullable so legacy users without a tenant can still log in).
+- Kept the existing `crypto.subtle` SHA-256 + UUID-salt hashing approach (`hashPassword`, `verifyPassword`) — unchanged.
+- New `createTenant(name: string)` → creates a `Tenant` row with `plan="free"`, `status="active"`, `maxUsers=2`.
+- `createUser(email, password, name?, tenantId?, role?)` → extended signature accepts an optional `tenantId` and `role` (default `"admin"`). Passes `tenantId: tenantId || null` to Prisma so legacy callers without a tenant still work.
+- `authenticateUser` now returns `tenantId: user.tenantId` in the SessionUser (was missing).
+- New `seedTenantSettings(tenantId, tenantName)` → idempotent: creates `EmailSettings` (with `fromName`), `SeoSettings` (default title/desc/keywords), `MaintenanceSettings` (schema defaults) only when missing for that tenant.
+- New `registerTenant(email, password, name, tenantName)` → orchestrates the full flow: (1) `createTenant`, (2) `createUser` with `role="admin"` linked to the new tenant, (3) `seedTenantSettings`, (4) `createSession` with the new SessionUser. Returns `{ user, tenant }`.
+- `getSession()` now hardens the parsed payload: validates `id` + `email` exist, then explicitly reconstructs the SessionUser with fallbacks (`name ?? null`, `role ?? "user"`, `tenantId ?? null`) — so a tampered or stale cookie from the old `abcd_session` schema degrades gracefully to `tenantId=null` instead of crashing.
+- `destroySession` updated to use the new cookie name.
+- `requireSession` unchanged in behaviour (still throws `"UNAUTHORIZED"`).
+
+FILE 2 — `src/middleware.ts` (rewritten):
+- `SESSION_COOKIE` → `"twomails_session"`.
+- New `PUBLIC_AUTH_PATHS = ["/login", "/register"]` allow-list: middleware explicitly returns `NextResponse.next()` for those, so registration / login flows work without a session.
+- `matcher` extended from `["/dashboard/:path*", "/dashboard"]` to also include `"/login"` and `"/register"` — so the public-path guard actually runs (without this, middleware wouldn't intercept them at all, which works but is implicit; explicit is clearer for future maintainers).
+- Dashboard validation block unchanged: still checks cookie presence, decodes base64, validates `id` + `email`, redirects to `/login?next=…` on failure, and deletes the bad cookie on the redirect response.
+
+FILE 3 — `src/app/api/auth/login/route.ts` (edited):
+- Returns the additional `tenantId` field on the user object in the success response (was previously only `id/email/name/role`). `authenticateUser` now provides `tenantId` from the DB lookup, so the client gets the full session picture after a successful login.
+
+FILE 4 — `src/app/api/auth/register/route.ts` (new, 85 lines):
+- `POST` handler accepting `{ email, password, name, tenantName }`.
+- Validates: all 4 fields present, email shape (regex), password ≥ 6 chars.
+- Uniqueness check via `db.user.findUnique({ where: { email } })` — returns HTTP 409 with a French error message if a user already exists with that email.
+- Delegates the heavy lifting to `registerTenant()` from `@/lib/auth` (which creates the Tenant, admin User, seeds EmailSettings/SeoSettings/MaintenanceSettings, and sets the session cookie).
+- On success returns `{ ok: true, user: { id, email, name, role, tenantId }, tenant: { id, name, plan, maxUsers } }`.
+- Standard try/catch → HTTP 500 with `"Erreur serveur."` on unexpected errors.
+
+FILE 5 — `src/app/register/page.tsx` (new, 459 lines):
+- Split-screen layout matching the login page's design language (navy gradient, glassmorphism, gold accents, framer-motion reveal).
+- Left panel (lg+ only): navy gradient + `bg-dot-gold` overlay, 2mails.pro logo in a white rounded card, "CRM SaaS Multi-tenant" badge (Sparkles icon), h2 "CRM & Email Management pour votre organisation", tagline paragraph, 4-feature list (Mail/Users/ShieldCheck/Zap) with gold-tinted icon chips.
+- Right panel: registration form with 5 inputs (Organization / Your name / Email / Password / Confirm password), each with a leading lucide icon and the password field has an Eye/EyeOff toggle.
+- Plan selector: 3 cards (Free / Pro / Business) — purely display + interactive selection (state), all accounts start as Free per task spec. Selected card gets accent ring + bg-accent/10.
+- Submit button "Créer mon compte" with ArrowRight icon and Loader2 spinner during submission.
+- Security note card (ShieldCheck + emerald icon) below the form.
+- "Déjà un compte ? Se connecter" link to `/login`.
+- Mobile-only 2×2 features grid (kept compact so the page is usable on phones without the left branding panel).
+- On submit: `fetch("/api/auth/register", POST)` → on `json.ok`, toast "Compte créé" then `window.location.href = "/dashboard"` (full-page navigation so the new session cookie is picked up by Next.js middleware on the next request — using `router.push` alone wouldn't reliably invalidate the unauthenticated state).
+- Uses existing shadcn/ui Button + Input + Label + `useToast` hook + `ThemeToggle` + `cn` util — no new components introduced.
+
+FILE 6 — `src/app/login/page.tsx` (edited):
+- Replaced the lone "Besoin d'aide pour vous connecter ? Contactez-nous" link with a 2-line block under a `border-t` divider:
+  - Line 1 (unchanged): "Besoin d'aide pour vous connecter ? Contactez-nous" → `/contact`.
+  - Line 2 (new): "Pas encore de compte ? S'inscrire →" linking to `/register` with the accent gold color (`text-accent font-semibold`) and a small inline `ArrowRight` icon to signal the registration CTA. The ArrowRight icon was already imported in the file (was used in the submit button), so no import changes needed.
+
+FILE 7 — `scripts/seed.ts` (rewritten):
+- New env-var-driven flow that defaults to 2mails.pro credentials: `ADMIN_EMAIL=admin@2mails.pro`, `ADMIN_PASSWORD=twomails2025`, `ADMIN_NAME=Admin 2mails.pro`, `TENANT_NAME=2mails.pro Demo`.
+- Step 1 — Ensure default tenant: `db.tenant.findFirst({ where: { name: tenantName } })` → creates the tenant (`plan="free"`, `status="active"`, `maxUsers=2`) only if missing.
+- Step 2 — Ensure admin user: `db.user.findUnique({ where: { email } })` → creates the admin with `role="admin"` and `tenantId=tenant.id` if missing. If the user already exists but `tenantId !== tenant.id`, it updates the existing row to link it to the default tenant and force `role="admin"` (handles legacy ABCD-era users gracefully).
+- Step 3 — `ensureTenantSettings(tenantId, tenantName)` seeds EmailSettings (with `fromName`), SeoSettings (default title/desc/keywords), MaintenanceSettings (schema defaults) — idempotent, skips any that already exist for the tenant. Replaces the old singleton `SeoSettings` seeding that no longer matches the multi-tenant schema (`tenantId` is now `@unique`, not the `id`).
+- Removed the old singleton SEO seeding (was using `id: "singleton"` which is incompatible with the new `tenantId @unique` schema).
+
+Verification:
+- `bunx eslint src/lib/auth.ts src/app/api/auth/register/route.ts src/app/register/page.tsx src/app/login/page.tsx src/middleware.ts scripts/seed.ts 2>&1 | tail -20` → EXIT_CODE=0, 0 errors, 0 warnings (no output).
+- `bunx tsc --noEmit --skipLibCheck` filtered for the 6 touched files (`src/lib/auth|src/app/api/auth|src/app/register|src/app/login|src/middleware|scripts/seed`) → EXIT_CODE=0, no type errors in any touched file. (Pre-existing type errors remain in OTHER files outside this task's scope — `api/maintenance`, `api/seo`, `api/team`, `api/tracking`, `dashboard/email`, `lib/imap` — these are all "missing tenant" type mismatches from the schema change and will be addressed by the follow-up data-filtering task per the brief: "API routes that query data … should eventually filter by tenantId, but for now just make the auth work. The data filtering will be done in a separate task.")
+- Confirmed `node_modules/.prisma/client/index.d.ts` contains the `TenantDelegate` (×2 matches), so the Prisma client is in sync with the multi-tenant schema — no `prisma generate` needed.
+
+Stage Summary:
+- 6 files changed/created:
+  - `src/lib/auth.ts` — multi-tenant session, `createTenant`, `registerTenant`, `seedTenantSettings`, `tenantId` in SessionUser; cookie renamed `twomails_session`.
+  - `src/middleware.ts` — `twomails_session` cookie, `/login` + `/register` public allow-list, `/dashboard` protection preserved.
+  - `src/app/api/auth/login/route.ts` — login response now includes `tenantId`.
+  - `src/app/api/auth/register/route.ts` (new) — `POST /api/auth/register` validates + delegates to `registerTenant`.
+  - `src/app/register/page.tsx` (new) — split-screen registration page with branding panel (2mails.pro logo, tagline, features), registration form (Organization / Name / Email / Password / Confirm + Free/Pro/Business plan selector display-only), and post-submit redirect to `/dashboard`.
+  - `src/app/login/page.tsx` — added "Pas encore de compte ? S'inscrire →" CTA linking to `/register`.
+  - `scripts/seed.ts` — creates default tenant `2mails.pro Demo`, admin user linked to it, and seeds per-tenant EmailSettings / SeoSettings / MaintenanceSettings. Idempotent.
+- All lint-clean (eslint 0/0) and type-clean on touched files.
+- Session payload schema now `{ id, email, name, role, tenantId }` (tenantId nullable for legacy users).
+- The `getSession()` helper used by API routes returns `tenantId` so the next task (filtering clients/team/messages/etc. by `tenantId`) can simply do `const session = await requireSession(); if (!session.tenantId) return 403; const items = await db.client.findMany({ where: { tenantId: session.tenantId } });`.
+- Next action: smoke-test `/register` end-to-end in the browser (full tenant registration → /dashboard redirect), then run `bun scripts/seed.ts` against the DB to seed the default tenant for dev. Follow-up task: filter all `/api/*` routes by `session.tenantId` and remove the pre-existing tsc errors in `api/maintenance`, `api/seo`, `api/team`, `api/tracking`, `dashboard/email`, `lib/imap`.
+
+---
+Task ID: rebrand
+Agent: Sub-agent (general-purpose)
+Task: Rebrand the entire ABCD Ltd project to "2mails.pro" — a CRM SaaS
+
+Work Log:
+- Read `/home/z/my-project/worklog.md` (640 lines) for full project context, then grep-swept the whole repo to enumerate every `ABCD` / `abcd` / `A.B.C.D` / `African Business Company for Development` reference. Confirmed the new logo asset `/public/logo-2mails-transparent.png` (128 KB) already exists alongside the legacy `logo-abcd-transparent.png`.
+
+Files modified (24 total — all listed task items 1–20 + additional files identified by the global sweep):
+
+1. `src/app/layout.tsx`:
+   - `metadata.title` → "2mails.pro | CRM SaaS — Gestion clients, équipe & messagerie"
+   - `metadata.description` rewritten as the 2mails.pro CRM SaaS pitch (FR).
+   - `metadata.keywords` array refreshed with CRM-flavoured keywords (2mails.pro, CRM SaaS, gestion clients, gestion équipe, messagerie intégrée, tableau de bord CRM, CRM Dakar Sénégal, logiciel CRM, platform CRM).
+   - `metadata.authors` → [{ name: "2mails.pro" }].
+   - `metadata.icons.icon` + `metadata.icons.apple` → `/logo-2mails-transparent.png`.
+   - `metadata.openGraph.title`, `.description`, `.siteName` → 2mails.pro CRM copy.
+   - `metadata.twitter.title` + `.description` → 2mails.pro CRM copy.
+   - Inline `themeScript` `localStorage.getItem('abcd-theme')` → `'twomails-theme'` (kept in sync with `theme-provider.tsx`'s `STORAGE_KEY` so the pre-hydration dark-mode bootstrap reads the same key the React provider will later write).
+
+2. `src/lib/site-data.ts`:
+   - 5× `longDesc` strings (transit-dedouanement, freight-forwarding, vente-transport, location-materiel-manutention, location-materiel-portuaire) — "ABCD Ltd" → "2mails.pro".
+   - 2× `FAQS` entries (faq.q1 + faq.a3) — "ABCD Ltd" → "2mails.pro".
+   - `COMPANY.email` "abcdev@gmail.com" → "contact@2mails.pro" (the public-facing contact email; phone numbers, address, founded year untouched).
+
+3. `src/lib/auth.ts`:
+   - `SESSION_COOKIE` "abcd_session" → "twomails_session" (single constant change — propagates to `createSession`, `destroySession`, `getSession`). The stray "abcd-theme stays" note in the task spec was a misnomer: `auth.ts` never referenced `abcd-theme` (only `abcd_session`).
+
+4. `src/components/theme-provider.tsx`:
+   - `STORAGE_KEY` "abcd-theme" → "twomails-theme".
+
+5. `src/lib/i18n.tsx`:
+   - `STORAGE_KEY` "abcd-lang" → "twomails-lang".
+   - 28 translation-string edits (14 FR + 14 EN): every visible "ABCD Ltd", "A.B.C.D Ltd" or "African Business Company for Development SARL (A.B.C.D Ltd)" reference replaced by "2mails.pro" — `hero.desc`, `about.badge`, `about.story.imgAlt`, `about.story.p1`/`p2`, `about.story.partnerDesc`, `about.desc1.post`, `contact.coords.title`, `contact.mapTitle`, `atouts.whyUs.title`, `faq.1.q`, `faq.3.a`, `faq.4.a` (email too), `partners.subtitle`, `partners.becomeCta.desc`, `partners.references.desc` + `footer.brand` ("African Business Company for Development" → "2mails.pro"). Only remaining "abcd" substring is in the legacy `COMPANY.email` string (now `contact@2mails.pro`).
+
+6. `src/components/site/site-header.tsx`:
+   - `<Link aria-label="ABCD Ltd">` → `aria-label="2mails.pro"`.
+   - `<img src="/logo-abcd-transparent.png" alt="Logo ABCD Ltd" />` → `src="/logo-2mails-transparent.png" alt="Logo 2mails.pro"`.
+
+7. `src/components/site/site-footer.tsx`:
+   - `SITE_URL` "https://abcdsenegal.com/" → "https://2mails.pro/".
+   - Footer logo `<img src="/logo-abcd-transparent.png" alt="Logo ABCD Ltd" />` → `src="/logo-2mails-transparent.png" alt="Logo 2mails.pro"`.
+   - QR code link `aria-label="QR code abcdsenegal.com"` → `"QR code 2mails.pro"`, `alt="QR code vers abcdsenegal.com"` → `alt="QR code vers 2mails.pro"`, the visible `abcdsenegal.com` link caption → `2mails.pro`.
+   - Copyright "© {year} African Business Company for Development SARL (A.B.C.D Ltd). {t('footer.rights')}" → "© {year} 2mails.pro. {t('footer.rights')}".
+
+8. `src/app/login/page.tsx`:
+   - Left-panel logo → `/logo-2mails-transparent.png` + `alt="Logo 2mails.pro"`.
+   - Left-panel brand caption "ABCD Ltd" → "2mails.pro".
+   - Hero paragraph "Espace d'administration ABCD Ltd. Gérez vos clients, votre équipe…" → "Espace d'administration 2mails.pro. Gérez vos clients, votre équipe…".
+   - Footer "© {year} ABCD Ltd — Dakar, Sénégal" → "© {year} 2mails.pro — Dakar, Sénégal".
+   - Mobile top-bar logo → `/logo-2mails-transparent.png` + `alt="Logo 2mails.pro"`.
+   - Form sub-header "Connectez-vous à votre espace d'administration ABCD Ltd." → "…2mails.pro."
+   - Email input `placeholder="vous@abcd.com"` → `placeholder="vous@2mails.pro"`.
+   - Security note "Accès réservé à l'équipe ABCD Ltd. Vos identifiants sont confidentiels et sécurisés." → "…équipe 2mails.pro.…"
+
+9. `src/app/dashboard/layout.tsx`:
+   - 3× logo `<img>` (desktop sidebar, mobile top bar, mobile drawer) — `src="/logo-abcd-transparent.png" alt="Logo ABCD Ltd"` → `src="/logo-2mails-transparent.png" alt="Logo 2mails.pro"`.
+   - "Administration" sidebar label kept as-is (task #9: "Administration label stays or change to 2mails.pro" — chose to keep "Administration" so the dashboard sidebar remains unchanged structurally).
+
+10. `src/app/maintenance/page.tsx`:
+    - Logo `src="/logo-abcd-transparent.png" alt="ABCD Ltd"` → `src="/logo-2mails-transparent.png" alt="2mails.pro"`.
+    - Footer hint "ABCD Ltd — Dakar, Sénégal" → "2mails.pro — Dakar, Sénégal".
+    - Contact `mailto:abcdev@gmail.com` → `mailto:contact@2mails.pro` (uses new brand domain).
+
+11. `src/app/(public)/page.tsx`:
+    - Warehouse image `alt="Entreposage et logistique ABCD Ltd"` → `alt="Entreposage et logistique 2mails.pro"`.
+    - About-section `<strong>African Business Company for Development SARL</strong>` → `<strong>2mails.pro</strong>` (the visible company-name emphasis word).
+
+12. `src/hooks/use-tracking.ts`:
+    - Session-storage key `"abcd_session_id"` → `"twomails_session_id"`.
+
+13. `src/middleware.ts`:
+    - `SESSION_COOKIE` "abcd_session" → "twomails_session" (matches `src/lib/auth.ts`).
+
+14. `src/lib/email.ts`:
+    - `sendContactNotification` + `sendAppointmentNotification`: `fromEmail` fallback `"noreply@abcd.com"` → `"noreply@2mails.pro"`; `fromName` fallback `"ABCD Ltd"` → `"2mails.pro"`.
+    - Email subject prefixes `[ABCD Ltd]` → `[2mails.pro]` (2× subjects).
+    - Plain-text intros "reçue sur le site ABCD Ltd." → "reçue sur le site 2mails.pro." (2× intros).
+    - HTML header banner "ABCD Ltd — Site web" → "2mails.pro — Site web" (2× banners — `replace_all`).
+    - HTML footer "Email automatique envoyé depuis le formulaire de contact/rendez-vous du site ABCD Ltd" → "…du site 2mails.pro" (2× footers).
+
+15. `src/lib/imap.ts`:
+    - `fromName` fallback `"ABCD Ltd"` → `"2mails.pro"` (line 298).
+
+16. `src/app/api/email-test/route.ts`:
+    - `fromName` fallback `"ABCD Ltd"` → `"2mails.pro"`.
+    - `subject: "[ABCD Ltd] Email de test"` → `"[2mails.pro] Email de test"`.
+    - Plain-text body "depuis ABCD Ltd." → "depuis 2mails.pro.".
+    - HTML header `<p>ABCD Ltd</p>` → `<p>2mails.pro</p>`.
+
+17. `src/app/api/seo/route.ts`:
+    - `DEFAULT_SEO.siteTitle` → "2mails.pro | CRM SaaS — Gestion clients, équipe & messagerie".
+    - `DEFAULT_SEO.metaDescription` rewritten for 2mails.pro CRM SaaS.
+    - `DEFAULT_SEO.keywords` refreshed (2mails.pro, CRM SaaS, gestion clients, gestion équipe, messagerie intégrée, tableau de bord CRM, CRM Dakar Sénégal, logiciel CRM, platform CRM).
+    - `DEFAULT_SEO.ogTitle` + `ogDescription` → 2mails.pro CRM copy.
+
+18. `src/app/api/contact/route.ts`:
+    - GET response `service: "ABCD Ltd — Contact API"` → `"2mails.pro — Contact API"`.
+
+19. `src/app/api/email-settings/route.ts`:
+    - `DEFAULTS.fromEmail` "abcdev@gmail.com" → "noreply@2mails.pro".
+    - `DEFAULTS.fromName` "ABCD Ltd" → "2mails.pro".
+    - `DEFAULTS.notifyEmail` "abcdev@gmail.com" → "contact@2mails.pro".
+    - PUT-handler fallback defaults aligned with the same new values.
+
+20. `src/app/dashboard/email/page.tsx`:
+    - Sub-header "Configurez le serveur SMTP et les notifications automatiques d'ABCD Ltd" → "…d'2mails.pro".
+    - 4× input placeholders: `"abcdev@gmail.com"` (smtpUser) → `"contact@2mails.pro"`; `"noreply@abcd-ltd.com"` (fromEmail) → `"noreply@2mails.pro"`; `"ABCD Ltd"` (fromName) → `"2mails.pro"`; `"contact@abcdsenegal.com"` (imapUser) → `"contact@2mails.pro"`; `"abcdev@gmail.com"` (notifyEmail) → `"contact@2mails.pro"`.
+
+21. `src/app/dashboard/seo/page.tsx`:
+    - Sub-header "Optimisez le référencement du site ABCD Ltd" → "…du site 2mails.pro".
+    - `siteTitle` placeholder "ABCD Ltd | Transit, Douane & Logistique à Dakar..." → "2mails.pro | CRM SaaS — Gestion clients & équipe...".
+    - `ogTitle` placeholder "ABCD Ltd | Transit & Logistique à Dakar" → "2mails.pro | CRM SaaS — Tableau de bord unifié".
+    - Twitter handle placeholder `"@abcdltd"` → `"@2mailspro"`.
+    - Google preview URL `https://abcd-ltd.com` → `https://2mails.pro`.
+    - Google preview title fallback `"Titre du site — ABCD Ltd"` → `"Titre du site — 2mails.pro"`.
+
+22. `src/app/dashboard/messagerie/page.tsx`:
+    - "Consulter en ligne" webmail link `https://webmail.abcdsenegal.com` → `https://mail.2mails.pro`.
+
+23. `src/app/dashboard/equipe/page.tsx`:
+    - Team-member email `placeholder="membre@abcd.com"` → `placeholder="membre@2mails.pro"`.
+
+24. `src/app/dashboard/maintenance/page.tsx`:
+    - Preview-pane logo `<img src="/logo-abcd-transparent.png" alt="ABCD Ltd" />` → `src="/logo-2mails-transparent.png" alt="2mails.pro"`.
+
+25. `src/app/dashboard/page.tsx`:
+    - Footer "© {year} African Business Company for Development SARL (A.B.C.D Ltd) — Tableau de bord interne" → "© {year} 2mails.pro — Tableau de bord interne".
+
+26. `src/app/register/page.tsx`:
+    - Footer "Powered by ABCD Ltd" → "Powered by 2mails.pro".
+
+27. `src/app/(public)/services/[slug]/page.tsx`:
+    - `generateMetadata` not-found title `"Service introuvable — ABCD Ltd"` → `"…— 2mails.pro"`.
+    - `generateMetadata` page title template `${service.title} — ABCD Ltd Dakar` → `${service.title} — 2mails.pro Dakar`.
+    - `openGraph.title` `${service.title} — ABCD Ltd` → `${service.title} — 2mails.pro`.
+    - Card heading "Pourquoi ABCD Ltd" → "Pourquoi 2mails.pro".
+    - 2× `mailto:abcdev@gmail.com` links + 2× visible `abcdev@gmail.com` captions → `mailto:contact@2mails.pro` + `contact@2mails.pro` (sidebar card + bottom CTA).
+
+28. `src/app/(public)/contact/page.tsx`:
+    - Google Maps info-card label "ABCD Ltd" → "2mails.pro" (above the address lines).
+
+29. `scripts/seed.ts`:
+    - Verified already rebranded by a prior task: `admin@2mails.pro`, `twomails2025`, `Admin 2mails.pro`, tenant `2mails.pro Demo`, SEO defaults referencing 2mails.pro — no changes needed.
+
+30. `package.json`:
+    - `"name": "abcd-ltd"` → `"name": "2mails-pro"`.
+
+31. `README.md`:
+    - Title `# ABCD Ltd — Site vitrine & Dashboard` → `# 2mails.pro — CRM SaaS & Dashboard`.
+    - Description rewritten to position 2mails.pro as a CRM SaaS multi-tenant platform.
+    - Coolify Docker-compose volume name `abcd-db` → `twomails-db`.
+    - Env-var defaults table: `ADMIN_EMAIL=admin@abcd.com` → `admin@2mails.pro`, `ADMIN_PASSWORD=abcd2025` → `twomails2025`, `ADMIN_NAME=Administrateur ABCD` → `Admin 2mails.pro`, added `TENANT_NAME=2mails.pro Demo` row.
+    - Removed `github.com/topmuch/ABCD` GitHub-URL reference from the Coolify Option A instructions.
+    - Local-dev seed line `admin@abcd.com / abcd2025` → `admin@2mails.pro / twomails2025`.
+    - Licence footer `© ABCD Ltd — Tous droits réservés.` → `© 2mails.pro — Tous droits réservés.`
+
+32. `Dockerfile`:
+    - Header comment `# ABCD Ltd - Dockerfile for Coolify` → `# 2mails.pro - Dockerfile for Coolify`.
+    - All 3× `DATABASE_URL=file:/app/data/abcd.db` (build env + final env + CMD) → `file:/app/data/twomails.db`.
+    - NOTE: kept `RUN git clone https://github.com/topmuch/ABCD.git .` as-is because that is the actual GitHub repo URL of the upstream source repo — renaming it here would break the Docker build until the GitHub repo itself is renamed.
+
+33. `docker-compose.yml`:
+    - Header comments + required/optional env-var defaults all rebranded (admin@2mails.pro / twomails2025 / Admin 2mails.pro / 2mails.pro Demo tenant).
+    - Service name `abcd-web` → `twomails-web`, `container_name: abcd-ltd` → `2mails-pro`, volume `abcd-db:/app/db` → `twomails-db:/app/db`, top-level `volumes: abcd-db:` → `twomails-db:`.
+
+Lint / type-check:
+- `cd /home/z/my-project && bunx eslint . 2>&1 | tail -40` → EXIT_CODE=0, **0 errors, 0 warnings** (eslint passes cleanly across all 30+ touched files).
+- `bunx tsc --noEmit --skipLibCheck` flagged 9 pre-existing TS errors inside `src/lib/imap.ts` (lines 118, 120, 121, 132, 142, 171, 176, 195) — all unrelated to the rebrand (they are `unknown[]` / `string | Date` typing issues in the IMAP fetch / parse path that pre-date this task; my only change to `imap.ts` was the `fromName` string fallback on line 298, which is type-clean).
+
+Sanity sweep (final state):
+- `grep -irn "ABCD\|abcd\|A\.B\.C\.D\|African Business" /home/z/my-project` → only one remaining hit: `Dockerfile:11:RUN git clone https://github.com/topmuch/ABCD.git .` (external GitHub repo URL — intentionally preserved).
+- `grep -n "logo-abcd" /home/z/my-project/src` → 0 matches (all 13 logo `<img src>` references now point to `/logo-2mails-transparent.png`).
+- `grep -n "abcd-theme\|abcd_session\|abcd-lang\|abcd_session_id" /home/z/my-project/src` → 0 matches (all 4 localStorage/sessionStorage keys + the 2 cookie names migrated to the `twomails-*` family).
+
+Stage Summary:
+- 24 source/config files updated, ~675 insertions / ~289 deletions in the working tree diff (includes pre-existing uncommitted multi-tenant work from earlier tasks that was already in the tree).
+- All visible brand text — page metadata, hero/about/services copy, FAQ, footer copyright, dashboard SEO/email/messagerie forms, login + register + maintenance pages, public services detail + contact pages — now reads "2mails.pro" instead of "ABCD Ltd" / "A.B.C.D Ltd" / "African Business Company for Development SARL".
+- All infra identifiers (npm package name, Docker service + container + volume names, SQLite db filename, default admin email/password/name, default tenant name) migrated to the 2mails.pro / twomails-* family.
+- All browser storage keys (`twomails-theme`, `twomails-lang`, `twomails_session_id`) and the httpOnly auth cookie (`twomails_session`) share the new prefix and stay in sync between the inline theme bootstrap script, the React providers, the tracking hook, the middleware, and the auth lib.
+- Brand contact email `abcdev@gmail.com` (everywhere it appeared in user-visible text and mailto links) is now `contact@2mails.pro`; default SMTP/IMAP/notify/fromEmail defaults in `api/email-settings`, `api/email-test`, `lib/email.ts`, `lib/imap.ts`, and the dashboard Email & Notifications form are now `noreply@2mails.pro` / `contact@2mails.pro`.
+- The new logo `/public/logo-2mails-transparent.png` (128 KB) is referenced by all 13 `<img>` logo instances across the public site, dashboard sidebar/mobile drawer, login, register, and maintenance pages, plus `metadata.icons.icon` + `.apple` in the root layout.
+- Color scheme (navy `#0c1f4a` + warm gold `#ca8a04` / `#fcd34d`) untouched. Dashboard structure, API route paths (`/api/clients`, `/api/team`, `/api/contact`, `/api/seo`, `/api/email-settings`, `/api/email-test`, `/api/maintenance`, `/api/auth/login`…), and Prisma schema left untouched as required.
+- The Dockerfile still clones from `github.com/topmuch/ABCD.git` — this is the upstream source repo URL and must be updated separately on GitHub before the Dockerfile can be re-pointed. Documented in this worklog as a known follow-up.
+- Files lint-clean — ready to commit + push to GitHub.

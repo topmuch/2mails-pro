@@ -23,7 +23,16 @@ export async function POST(req: NextRequest) {
     }
 
     await createSession(user);
-    return NextResponse.json({ ok: true, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+    return NextResponse.json({
+      ok: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        tenantId: user.tenantId,
+      },
+    });
   } catch (err) {
     console.error("[auth/login]", err);
     return NextResponse.json(

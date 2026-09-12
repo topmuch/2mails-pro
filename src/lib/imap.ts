@@ -295,7 +295,7 @@ export async function sendEmail(opts: {
       },
     });
     const fromEmail = config.fromEmail || config.smtpUser;
-    const fromName = config.fromName || "ABCD Ltd";
+    const fromName = config.fromName || "2mails.pro";
     const info = await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
       to: opts.to,

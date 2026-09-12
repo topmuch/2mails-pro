@@ -295,7 +295,7 @@ export default function MessageriePage() {
           <div className="flex items-center gap-2 shrink-0">
             <Button asChild variant="ghost" size="sm"
               className="text-white/80 hover:text-white hover:bg-white/10 border border-white/20">
-              <a href="https://webmail.abcdsenegal.com" target="_blank" rel="noopener noreferrer">
+              <a href="https://mail.2mails.pro" target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-1.5 h-4 w-4" />
                 <span className="hidden sm:inline">Consulter en ligne</span>
                 <span className="sm:hidden">Webmail</span>

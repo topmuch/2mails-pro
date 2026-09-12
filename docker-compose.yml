@@ -1,27 +1,28 @@
 ####################################################################
-# ABCD Ltd — docker-compose for Coolify / local Docker deployment
+# 2mails.pro — docker-compose for Coolify / local Docker deployment
 ####################################################################
 # On Coolify:
 #   1. Add a new resource → Docker Compose based
-#   2. Point to this repository (github.com/topmuch/ABCD)
+#   2. Point to this repository
 #   3. Coolify will use this docker-compose.yml automatically
 #
 # Required environment variables (set in Coolify dashboard):
-#   - ADMIN_EMAIL      (e.g. admin@abcd.com)
+#   - ADMIN_EMAIL      (e.g. admin@2mails.pro)
 #   - ADMIN_PASSWORD   (set a strong password!)
 #
 # Optional environment variables:
-#   - ADMIN_NAME       (default: "Administrateur ABCD")
+#   - ADMIN_NAME       (default: "Admin 2mails.pro")
+#   - TENANT_NAME      (default: "2mails.pro Demo")
 #   - DATABASE_URL     (default: file:/app/db/custom.db)
 #   - NODE_ENV         (default: production)
 ####################################################################
 
 services:
-  abcd-web:
+  twomails-web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: abcd-ltd
+    container_name: 2mails-pro
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -31,12 +32,13 @@ services:
       - HOSTNAME=0.0.0.0
       - DATABASE_URL=file:/app/db/custom.db
       # ---- Admin credentials (override in Coolify env vars) ----
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@abcd.com}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-abcd2025}
-      - ADMIN_NAME=${ADMIN_NAME:-Administrateur ABCD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@2mails.pro}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-twomails2025}
+      - ADMIN_NAME=${ADMIN_NAME:-Admin 2mails.pro}
+      - TENANT_NAME=${TENANT_NAME:-2mails.pro Demo}
     volumes:
       # Persistent storage for the SQLite database
-      - abcd-db:/app/db
+      - twomails-db:/app/db
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
       interval: 30s
@@ -45,5 +47,5 @@ services:
       start_period: 40s
 
 volumes:
-  abcd-db:
+  twomails-db:
     driver: local
