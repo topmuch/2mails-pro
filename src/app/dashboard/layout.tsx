@@ -32,12 +32,14 @@ const NAV_ITEMS = [
   { href: "/dashboard/taches", label: "Tâches", icon: CheckSquare },
   { href: "/dashboard/clients", label: "Clients", icon: Users },
   { href: "/dashboard/calendrier", label: "Calendrier", icon: CalendarDays },
+  { href: "/dashboard/membres", label: "Membres", icon: Users },
   { href: "/dashboard/equipe", label: "Équipe", icon: Users },
   { href: "/dashboard/messages", label: "Messages", icon: Mail },
   { href: "/dashboard/messagerie", label: "Messagerie", icon: Inbox },
   { href: "/dashboard/rendez-vous", label: "Rendez-vous", icon: CalendarDays },
   { href: "/dashboard/email", label: "Email & Notifications", icon: Bell },
   { href: "/dashboard/seo", label: "Paramètres SEO", icon: Settings },
+  { href: "/dashboard/compte", label: "Compte & Facturation", icon: Settings },
   { href: "/dashboard/maintenance", label: "Maintenance", icon: Wrench },
 ];
 

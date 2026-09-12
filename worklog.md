@@ -1128,3 +1128,83 @@ Next Actions:
 - **Email API routes tenant scoping** (out of scope here): `/api/email/inbox`, `/api/email/[id]`, `/api/email/[id]/read`, `/api/email/send` currently call `fetchInbox`/`fetchEmailDetail`/`markEmailRead`/`deleteEmail`/`sendEmail` from `lib/imap.ts` without passing `tenantId`. They work via the `findFirst()` fallback (any tenant's IMAP config), but for true isolation these routes should require auth + pass `session.tenantId` to a new `tenantId` option on each `lib/imap.ts` function (which would then forward it to `getEmailConfig(tenantId)`). Recommended follow-up.
 - **`src/app/dashboard/email/page.tsx`** has a pre-existing TS error (`EmailSettings` state type missing `imapHost/imapPort/imapUser/imapPassword` fields); fix the local type to match the API response shape.
 - **`src/lib/imap.ts`** has 11 pre-existing TS errors (imapflow typing quirks around `uids` possibly-undefined, `bodyStructure` childNodes typing, `Buffer | undefined` source). Consider tightening the imapflow client types or adding narrow runtime guards.
+
+---
+Task ID: landing-page
+Agent: Sub-agent (general-purpose)
+Task: Create the SaaS landing page for 2mails.pro (overwrite existing ABCD homepage at `src/app/(public)/page.tsx`)
+
+Work Log:
+- Read worklog, existing `(public)/page.tsx`, `(public)/layout.tsx`, `globals.css`, `site-header.tsx`, `card.tsx`, `button.tsx`, `badge.tsx`, `i18n.tsx` and `package.json` to understand patterns & available design tokens.
+- Verified lucide-react ships `trending-up`, `users`, `mail`, `check-square`, `calendar-days`, `bar-chart-3` icons (all present in `node_modules/lucide-react/dist/esm/icons`).
+- Overwrote `src/app/(public)/page.tsx` with a brand-new `"use client"` SaaS landing page for 2mails.pro:
+  - **Hero** (compact, `min-h-[60vh]`, navy `#0c1f4a` bg + `bg-dot-gold` overlay + floating orbs with `animate-float` + `glow-gold`): glass-card badge "CRM + Email Management SaaS" (Sparkles icon), H1 with `text-gradient-gold` highlight on "2mails.pro", FR subtitle, two CTAs — gold "Créer un compte gratuit" → `/register` (with ArrowRight) + outline/glass "Voir les tarifs" → anchor `#tarifs`, plus 4 glass-card stats (Multi-tenant / FR·EN / Dark mode / API REST) with icons.
+  - **Features grid** (6 cards in `md:grid-cols-2 lg:grid-cols-3`): Pipeline de ventes (TrendingUp), Gestion des clients (Users), Messagerie intégrée (Mail), Tâches & rappels (CheckSquare), Calendrier & rendez-vous (CalendarDays), Statistiques & analytics (BarChart3). Each card has an icon chip that swaps to gold-on-hover + hover lift + accent border.
+  - **Pricing section** (`id="tarifs"`, secondary bg + `bg-dot-gold`): 3 plans — Free (0€), Pro (29€, highlighted with `border-accent border-2`, `glow-gold`, `lg:scale-105` and "★ Populaire" badge), Business (99€). Each card shows name, description, big price + `/mois`, features list with accent Check chips, and a full-width "Commencer" CTA → `/register` (gold variant on Pro).
+  - **Final CTA** (navy bg + `bg-dot-gold` + central gold blur orb): H2 "Prêt à transformer votre gestion client ?" with `text-gradient-gold` highlight + supporting copy + gold "Créer un compte" button → `/register`.
+- Used `framer-motion` `Reveal` helper (whileInView opacity+y) consistent with prior page; `lucide-react` icons; shadcn `Button`, `Card` (+ `CardHeader`/`CardTitle`/`CardDescription`/`CardContent`), `Badge`; `Link` from `next/link`. Did NOT wire `useLanguage` (task said FR-only is acceptable) to avoid touching `i18n.tsx` dictionaries out of scope.
+- Layout: page renders inside `(public)/layout.tsx`, so `SiteHeader` + `SiteFooter` apply automatically. Hero uses navy `#0c1f4a` bg so the header's `isHome` navy-gradient overlay blends seamlessly.
+- Ran `bunx eslint "src/app/(public)/page.tsx"` → no output (0 errors). Confirmed via `tsc --noEmit --skipLibCheck` that the only TS error in the repo is the pre-existing one in `dashboard/email/page.tsx` (unrelated).
+
+Stage Summary:
+- New file: `src/app/(public)/page.tsx` (≈ 350 lines, fully overwritten).
+- Sections: Hero (compact, navy + gold) → Features (6 cards) → Pricing (3 plans, Pro highlighted) → Final CTA.
+- All CTAs point to `/register`. "Voir les tarifs" anchor-scrolls to `#tarifs`.
+- ESLint clean. No new dependencies. No changes to `i18n.tsx` / `globals.css` / layout.
+
+---
+Task ID: members-account
+Agent: Sub-agent (general-purpose)
+Task: Create two dashboard pages — `src/app/dashboard/membres/page.tsx` (team member + invitation management) and `src/app/dashboard/compte/page.tsx` (account/organisation settings).
+
+Work Log:
+- Read `worklog.md`, `prisma/schema.prisma` (confirmed `Invitation { id, email, tenantId, role, token, status, createdAt, expiresAt }`, `Tenant { name, domain, plan, status, maxUsers }`, `TeamMember { name, role, email, active }`), `src/app/dashboard/layout.tsx`, `src/app/dashboard/equipe/page.tsx` + `seo/page.tsx` + `clients/page.tsx` (conventions: `max-w-7xl` main wrapper, `bg-accent text-accent-foreground` gold buttons, sticky `bottom-4` save bar, `useToast` from `@/hooks/use-toast`, `motion`/`AnimatePresence` modal pattern).
+- Read all 4 API routes to confirm exact response shapes:
+  - `GET /api/invitations` → `{ ok, data: [{ id, email, role, token, status, createdAt, expiresAt }] }`
+  - `POST /api/invitations` body `{ email, role }` → `{ ok, id, token }` or `{ ok: false, error }` (also enforces tenant `maxUsers` limit + unique-email check server-side)
+  - `DELETE /api/invitations/[id]` → `{ ok }`
+  - `GET /api/team` → `{ ok, total, data: [{ id, name, role, email, phone, bio, photoUrl, yearsExperience, order, active, createdAt, updatedAt }] }` (role is free-text job title, NOT admin/manager/agent)
+  - `GET /api/account` → `{ ok, data: { id, name, domain, plan, status, maxUsers, currentUsers, currentClients, currentDeals, createdAt } }`
+  - `PUT /api/account` body `{ name?, domain?, plan? }` → `{ ok, data: { name, domain, plan, maxUsers } }` (server auto-sets `maxUsers` from plan: free=2, pro=10, business=50)
+- Verified shadcn/ui components present: `card`, `button`, `input`, `label`, `badge`, `skeleton`, `select`, `table`, `progress`, `toast` (with `ToastAction`-style `action` prop on the `toast()` helper).
+- Created **`src/app/dashboard/membres/page.tsx`** (`"use client"`, ~520 lines):
+  1. Header — `UserPlus` icon chip + "Membres" H1 + "Actualiser" outline button + gold "Inviter un membre" button.
+  2. **3 KPI cards** (framer-motion staggered): Utilisateurs actifs (`currentUsers` from `/api/account`, with active-team-member hint), Invitations en attente (`pending` count), Limite du plan (`currentUsers/maxUsers` e.g. "2/2"). Loading skeletons shown while `loading && !account`.
+  3. **Active members table** — `GET /api/team`, filtered to `active===true`. Columns: Nom (colored avatar circle + initials + name), Email (mailto link with truncation), Rôle (badge with `roleBadgeClass()` keyword detection — admin→blue, manager→amber, agent/other→gray), Statut (green "Actif" badge). Empty state + 3-row loading skeleton.
+  4. **Pending invitations table** — `GET /api/invitations`. Columns: Email (Mail icon), Rôle (`ROLE_LABELS` fr mapping admin→Administrateur/manager→Manager/agent→Agent), Statut (amber pending / green accepted / red expired via `statusBadgeClass`), Créée le (formatted fr date), Actions (Copy-link button + red Trash2 delete with `confirm()`). Empty state + loading skeleton.
+  5. **Invite modal** — `AnimatePresence` overlay, framer-motion scale-in. Email `<Input>` (required, email type) + `<Select>` role (admin/manager/agent) with icon-prefixed `<SelectItem>`s (Shield/Users/Mail). Submit → `POST /api/invitations`. On success, fires a `toast()` with the full invitation link `${origin}/register?invite=${token}` in the description AND a "Copier" action button that writes the link to clipboard. On error (e.g. "Cet email est déjà utilisé" or "Limite atteinte"), shows destructive toast with the server's error message.
+  6. Copy-to-clipboard helper via `navigator.clipboard.writeText` (wrapped in try/catch); also reused by the per-invitation "copy link" icon button.
+- Created **`src/app/dashboard/compte/page.tsx`** (`"use client"`, ~470 lines):
+  1. Header — `Settings` icon chip + "Paramètres du compte" H1 + "Actualiser" outline button.
+  2. **Organisation card** — `Building2` icon. Editable `name` (`<Input>` required) + editable `domain` (`<Input>` optional, placeholder `monentreprise.2mails.pro`). Read-only status badge (`statusBadgeClass`: active→green, suspended→amber, cancelled→red). Loading skeleton block while fetching.
+  3. **Plan card** — `CreditCard` icon. Shows current plan badge + price (Free/Pro 29€/Business 99€). **Features comparison grid** (3 cards in `sm:grid-cols-3`): each card shows plan name, price, feature checklist (with green CheckCircle2), and a "Choisir" button (disabled + "Plan actuel" badge when it's the current plan; toggles `form.plan` otherwise; selected card gets `border-accent ring-2 ring-accent/30` highlight). **Fallback `<Select>`** "Changer de plan" bound to `form.plan`. Note explains the plan change auto-adjusts the user limit.
+  4. **Usage stats card** — `TrendingUp` icon. Users usage row with `<Progress>` bar (`currentUsers/maxUsers` %) + numeric label. Two stat tiles for Clients count + Deals count. Created-date row with `Calendar` icon + fr-formatted date.
+  5. **Danger zone** — red-bordered `Card`. "Supprimer le compte" destructive button toggles a `confirmDelete` state → animated amber warning panel explaining the irreversible action is not yet wired in this version and directing the user to `support@2mails.pro` (placeholder per task spec). Close button resets state.
+  6. **Sticky save bar** — `sticky bottom-4 z-30`, shadow-lg Card. Shows dirty-state indicator (amber "Modifications non enregistrées" vs green summary "Plan X · N/M utilisateurs"). "Réinitialiser" outline button (disabled when clean) + gold "Enregistrer" submit button (disabled when clean or saving). `dirty` computed by diffing `form` against the fetched `data`.
+  7. Submit → `PUT /api/account` with `{ name, domain, plan }`; on success re-fetches account data and shows success toast; on error shows destructive toast with server message.
+
+Conventions reused from existing pages:
+- Main wrapper `<main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">` (membres) / `max-w-5xl` + `pb-28` (compte, to clear the sticky save bar).
+- Gold CTA buttons: `className="bg-accent text-accent-foreground hover:bg-accent/90"`.
+- Icon chip in header: `<div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">`.
+- Modal pattern: fixed overlay `bg-black/50 backdrop-blur-sm` + `motion.div` `initial={{opacity:0,scale:0.95,y:10}}` → `animate={{opacity:1,scale:1,y:0}}`, `onClick` overlay-to-close + `e.stopPropagation()` on inner panel.
+- `useToast` import from `@/hooks/use-toast`; destructive variant for errors.
+- framer-motion `motion.div` with `initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay: i*0.05}}` for card stagger.
+- All text in French to match the rest of the dashboard.
+
+Lint / type-check:
+- `cd /home/z/2mails-pro && bunx eslint src/app/dashboard/membres/page.tsx src/app/dashboard/compte/page.tsx; echo "EXIT_CODE=$?"` → **EXIT_CODE=0, 0 errors, 0 warnings**.
+- `bunx tsc --noEmit` — the only remaining TS errors are pre-existing in `src/lib/imap.ts` (imapflow typing quirks, 10 errors). **No new TS errors introduced** by either new file (grep for `membres/page` and `compte/page` in tsc output returns nothing).
+
+Stage Summary:
+- 2 new files created, both `"use client"` pages rendering inside the existing `dashboard/layout.tsx`.
+- **`membres/page.tsx`**: KPIs (active users / pending invitations / plan limit) + active-members table (from `/api/team`) + invitations table (from `/api/invitations`) with copy-link & delete + invite modal (email + role select) that POSTs and toasts the `/register?invite=TOKEN` link with a "Copier" action button. Loading skeletons + empty states everywhere.
+- **`compte/page.tsx`**: Organisation card (editable name + domain + status badge) + Plan card (3-plan comparison grid + select + price/features) + Usage stats (users progress bar + clients/deals tiles + created date) + Danger zone (red destructive button → amber confirmation placeholder) + sticky bottom save bar with dirty-state indicator.
+- ESLint clean, TypeScript clean for both files. No new dependencies; all imports resolve to existing shadcn/ui components, `lucide-react`, `framer-motion`, `@/hooks/use-toast`.
+
+Next Actions:
+- **Wire `/dashboard/membres` and `/dashboard/compte` into the sidebar** (`src/app/dashboard/layout.tsx` `NAV_ITEMS`): currently neither route is in the nav. Suggested entries: `{ href: "/dashboard/membres", label: "Membres", icon: UserPlus }` and `{ href: "/dashboard/compte", label: "Compte", icon: Settings }`.
+- **Active members source mismatch**: the task said to fetch active members from `/api/team`, but `TeamMember.role` is a free-text job title (e.g. "Responsable Transit"), not the SaaS role enum (admin/manager/agent). The role badge uses keyword detection (`includes("admin")` → blue, `includes("manager")` → amber, else gray) as a pragmatic bridge. For a true "SaaS users" list, add a `GET /api/users` route returning `User[]` (with `role` enum + `isActive`) scoped to `session.tenantId` and switch the active-members table to it.
+- **Danger zone**: the "Supprimer le compte" button is a placeholder (shows warning + redirects to support). When ready, add `DELETE /api/account` route (cascade-delete tenant + all dependent records) + a typed-confirmation modal (e.g. type org name to confirm).
+- **Plan upgrade flow**: `PUT /api/account` immediately changes `plan` + `maxUsers` server-side with no billing integration. Wire up a payment provider (Stripe/PayPal) before exposing Pro/Business upgrades to real tenants.
+- **Subdomain → tenant**: the `domain` field is editable but nothing resolves `domain → tenantId` yet (see `tenant-filter` task next-actions in worklog). Coordinate with that follow-up.
