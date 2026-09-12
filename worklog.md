@@ -906,3 +906,172 @@ Stage Summary:
 - Color scheme (navy `#0c1f4a` + warm gold `#ca8a04` / `#fcd34d`) untouched. Dashboard structure, API route paths (`/api/clients`, `/api/team`, `/api/contact`, `/api/seo`, `/api/email-settings`, `/api/email-test`, `/api/maintenance`, `/api/auth/login`…), and Prisma schema left untouched as required.
 - The Dockerfile still clones from `github.com/topmuch/ABCD.git` — this is the upstream source repo URL and must be updated separately on GitHub before the Dockerfile can be re-pointed. Documented in this worklog as a known follow-up.
 - Files lint-clean — ready to commit + push to GitHub.
+
+---
+Task ID: pipeline-page
+Agent: Sub-agent (general-purpose)
+Task: Create `/src/app/dashboard/pipeline/page.tsx` — Kanban board for sales deals
+
+Work Log:
+- Read `worklog.md`, `src/app/api/deals/route.ts`, `src/app/api/deals/[id]/route.ts`, `src/app/api/clients/route.ts`, `src/app/dashboard/clients/page.tsx`, `src/app/dashboard/rendez-vous/page.tsx`, `src/app/dashboard/layout.tsx`, `prisma/schema.prisma`, `eslint.config.mjs`, and key shadcn/ui components (button, card, badge, select, input, label, skeleton) + `useToast` hook to match existing conventions (FR-first copy, navy/gold palette, motion + AnimatePresence modal pattern, `bg-accent text-accent-foreground` for gold CTAs, `flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8` main wrapper).
+- Created directory `src/app/dashboard/pipeline/` and wrote `page.tsx` (~570 lines) as a `"use client"` component.
+- Implemented:
+  1. Header — `TrendingUp` icon in primary-tinted square, title "Pipeline", subtitle, Refresh (outline icon button with spin during loading) and gold "Nouveau deal" button (`bg-accent text-accent-foreground hover:bg-accent/90`).
+  2. Summary cards (4) — Total value (€), Active deals count, Won deals count, Won revenue (€), each formatted with `Intl.NumberFormat("fr-FR", { currency: "EUR" })`.
+  3. Kanban board — horizontal-scroll `overflow-x-auto` with 6 fixed-width (`w-72`) columns, one per stage (`lead|qualified|proposal|negotiation|won|lost`). Each column header shows colored dot + FR label + count badge + total value (€). Each column body is a scrollable list (`max-h-[calc(100vh-22rem)]`) of cards.
+  4. Cards — title (line-clamp-2), stage badge (colored), client name (Building2 icon), value (DollarSign icon, primary color), close date (Calendar icon), assignedTo (User icon). Draggable via HTML5 `draggable` + `onDragStart/onDragEnd`; click opens the edit modal.
+  5. Drag-and-drop — `onDragOver`/`onDrop` on column container with `e.preventDefault()`. Optimistic local state update (`deals.map`) immediately moves the card to the new stage; `PUT /api/deals/:id { stage }` persists; toast confirms move ("« title » → <stage label>"). On error, re-fetches. `dragOverStage` highlights the target column with the stage's color border + accent tint; the dragged card fades to 50% opacity; the moving card shows a primary ring.
+  6. Create/Edit modal — unified framer-motion modal (`AnimatePresence` + backdrop blur, identical pattern to clients page). Fields: title (required), value (€ number), stage (Select with colored dots), client (Select populated from `GET /api/clients`), close date (native `type="date"`), assignedTo. Save button calls `POST /api/deals` (create) or `PUT /api/deals/:id` (edit). Edit mode additionally renders a destructive "Supprimer" button (with `confirm()`) that calls `DELETE /api/deals/:id`.
+  7. Stage color-coding — lead=blue, qualified=cyan, proposal=amber, negotiation=orange, won=emerald, lost=rose; applied to dot, badge text/bg, drop-highlight border, empty-state tint.
+  8. Loading state — 6-column Skeleton grid (header + 2 cards each) shown while `loading`.
+  9. Empty state — dashed-border tinted placeholder per column ("Aucun deal", plus "Déposez ici" hint when this column is the active drop target).
+- Helpers: `stageMeta(stage)` (label + colors), `formatCurrency(n)` (EUR fr-FR), `formatDate(iso)` (e.g. "12 déc. 2024"), `toDateInput(iso)` (yyyy-mm-dd for native date input).
+- Toast notifications for: create success, edit success, delete success, drag-move success, and error fallbacks (load fail, save fail, delete fail, move fail → re-fetch).
+- Eslint: `bunx eslint src/app/dashboard/pipeline/page.tsx` → exit code 0, no errors/warnings.
+- Did NOT modify dashboard sidebar nav (`src/app/dashboard/layout.tsx`) — task scope was limited to creating the page. Page is reachable at `/dashboard/pipeline`.
+
+Next Actions:
+- Optionally add a "Pipeline" entry (`TrendingUp` icon) to `NAV_ITEMS` in `src/app/dashboard/layout.tsx` so the page is reachable from the sidebar.
+- Consider server-side initial data fetch (RSC wrapper) to eliminate the loading skeleton flash on first paint.
+- Optional: add a "Quick stage move" `<Select>` on each card for accessibility (mobile users can't drag-and-drop easily).
+- Verify Prisma `Deal.closeDate` round-trips correctly through `new Date(body.closeDate)` (UTC midnight) — display uses `toLocaleDateString` so timezone shift should not affect the rendered day, but worth a quick manual test.
+
+
+---
+Task ID: tasks-calendar
+Agent: Sub-agent (general-purpose)
+Task: Build two dashboard pages for the 2mails.pro CRM — `/dashboard/taches` (task management) and `/dashboard/calendrier` (appointment calendar view)
+
+Work Log:
+- Read existing conventions: `src/app/dashboard/clients/page.tsx` + `src/app/dashboard/rendez-vous/page.tsx` (shadcn/ui + framer-motion + useToast pattern, French UI, `<main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">` shell). Confirmed Prisma `Task` model fields (`title, description, status [pending|in_progress|done|cancelled], priority [low|medium|high], dueDate?, clientId?, assignedTo?`) and `Appointment` model fields (`name, email, phone?, company?, subject?, preferredDate?(String), preferredTime?, message, status [pending|confirmed|cancelled]`). Confirmed API shapes: `GET /api/tasks?status=pending` returns `{ ok, data: [{ id, title, description, status, priority, dueDate, clientId, clientName, assignedTo, createdAt }] }`, `POST /api/tasks` body `{ title, description?, status?, priority?, dueDate?, clientId? }` → `{ ok, id }`, `PUT /api/tasks/[id]` body `{ status, title?, priority?, dueDate? }`, `DELETE /api/tasks/[id]`. `GET /api/appointments` returns `{ ok, total, data: [{ id, name, email, phone, company, subject, preferredDate, preferredTime, message, status, createdAt }] }`.
+
+- File 1 — `src/app/dashboard/taches/page.tsx` (476 lines):
+  - `"use client"` page, returns the required `<main>` shell.
+  - Header: `CheckSquare` icon in primary/10 box + "Tâches" h1 + subtitle + "Nouvelle tâche" button (accent color) + refresh button.
+  - KPI cards: 4 cards (Total=blue, En cours=amber, Terminées=emerald, En retard=rose) — each with colored numeric + small icon box. Multicolor palette per spec.
+  - Filter tabs (custom buttons, not shadcn Tabs to allow count badges): "Toutes" | "En cours" | "Terminées" | "En retard" with per-tab count chips. Overdue = `dueDate < now && status not in [done, cancelled]`.
+  - Task list: animated cards (framer-motion `layout` + initial/y/exit). Each card has: clickable checkbox (CheckCircle2=done, Circle=pending) toggling status via PUT with optimistic state + rollback on error, clickable body opening edit modal (title + description + priority badge + overdue badge + due date in red when overdue + client name + "Créée le" date), edit (Pencil) + delete (Trash2, destructive color) buttons.
+  - Priority badges: high=rose-100/rose-700, medium=amber-100/amber-700, low=emerald-100/emerald-700 — matches KPI multicolor intent.
+  - Create/Edit modal: title (required), description (textarea), priority (Select), due date (date input), client (optional Select populated from `/api/clients`), status (Select, only in edit mode). AnimatePresence transition.
+  - All icons used: CheckSquare, Plus, Trash2, Calendar, Flag, Clock, CheckCircle2, Circle, AlertCircle (+ Pencil, RefreshCw, X for chrome).
+
+- File 2 — `src/app/dashboard/calendrier/page.tsx` (560 lines):
+  - `"use client"` page, returns the required `<main>` shell.
+  - Header: `CalendarDays` icon + "Calendrier" h1 + subtitle + refresh button.
+  - KPI cards: 3 cards (Ce mois-ci=blue, En attente=amber, Confirmés=emerald).
+  - Month navigation: prev/next ChevronLeft/ChevronRight buttons + "Aujourd'hui" reset button; title shows `MONTHS_FR[month] year` capitalized.
+  - Month grid built with plain HTML/CSS (no calendar library): 7-column CSS grid (Lun-Mar-Mer-Jeu-Ven-Sam-Dim header row + day cells). Uses `new Date(year, month+1, 0).getDate()` for days-in-month and `(getDay()+6)%7` for Monday-based weekday offset. Each cell shows: day number (today highlighted with filled primary circle), appointment count badge if any, and up to 3 status dots (pending=amber, confirmed=emerald, cancelled=rose). Click day → updates selectedDay state.
+  - Selected day panel (lg:col-span-1, right of calendar on desktop): scrollable list of AppointmentCard components for that day with empty state.
+  - Stats: total this month + pending + confirmed computed from the cursor's year/month.
+  - "Sans date" section below the grid: shows appointments where `parsePreferredDate()` returns null. `parsePreferredDate` handles ISO strings, `YYYY-MM-DD`, and `DD/MM/YYYY` formats safely.
+  - AppointmentCard component (reused for both selected-day list and no-date grid): name (User icon), company (Building2), subject, message (line-clamp-2, only in non-compact mode), status badge (color-coded with dot), preferredTime (Clock), clickable phone (tel: link) and email (mailto: link). Framer-motion layout animations.
+  - Legend strip showing the 3 status colors with labels.
+  - All icons used: CalendarDays, ChevronLeft, ChevronRight, Clock, Phone, Mail (+ RefreshCw, User, Building2 for chrome).
+
+- Cleanup pass after first eslint run: removed unused imports (`CardDescription` from taches, `MapPin` + `Badge` from calendrier) for tidiness.
+
+Lint / type-check:
+- `cd /home/z/my-project && bunx eslint src/app/dashboard/taches/page.tsx src/app/dashboard/calendrier/page.tsx` → EXIT=0, **0 errors, 0 warnings** on both files.
+- `bunx tsc --noEmit -p tsconfig.json | rg "taches|calendrier"` → 0 matches (no TypeScript errors introduced by either new file).
+
+Stage Summary:
+- Two new dashboard pages created and lint-clean. Neither page was added to the sidebar NAV_ITEMS array in `src/app/dashboard/layout.tsx` (out of scope per task spec); they are reachable directly at `/dashboard/taches` and `/dashboard/calendrier`.
+- Both pages use the existing shadcn/ui components (Button, Card, Input, Label, Textarea, Badge, Select), `useToast` hook, `cn` helper, framer-motion, and lucide-react icons — consistent with the rest of the dashboard.
+- Both pages fetch data with `cache: "no-store"` and handle errors via `toast({ variant: "destructive", ... })` per existing pattern.
+- The tasks page supports full CRUD (create via POST, edit via PUT, delete via DELETE, toggle-done via PUT with optimistic update + rollback). The calendar page is read-only (matches the existing read-only `/api/appointments` GET).
+- Calendar grid is pure HTML/CSS + `Date` API (no react-day-picker / shadcn Calendar component used), as required.
+- Files ready to commit.
+
+---
+Task ID: timeline-export
+Agent: General-purpose sub-agent
+Task: Add Interactions Timeline tab to clients modal + Export CSV button + advanced filters (country, service) + column sorting on the clients page
+
+Work Log:
+- Read `/home/z/my-project/src/app/dashboard/clients/page.tsx` (464 lines) — existing CRUD page with stats cards, status filter, search, table, Add/Edit modal.
+- Verified backend is ready (no API changes needed):
+  - `GET /api/interactions?clientId=xxx` → `{ ok, data: [{ id, type, content, clientId, createdBy, createdAt }] }` (returns ISO strings)
+  - `POST /api/interactions` body `{ type, content, clientId }` → `{ ok, id }`
+  - `DELETE /api/interactions/[id]` → `{ ok }`
+  - `GET /api/clients/export` → CSV file with `Content-Disposition: attachment`
+- Confirmed `@/components/ui/tabs` exists (Radix-based) — imported `Tabs, TabsList, TabsTrigger, TabsContent`.
+- Confirmed `Button` supports `asChild` (via Radix Slot) — used for the `<a href="/api/clients/export" download>` Export CSV button so we get a true link (preserving download semantics) styled as a Button.
+
+Edits to `src/app/dashboard/clients/page.tsx` (464 → 790 lines, all surgical via MultiEdit):
+
+1. Imports
+   - Added `useMemo` from react.
+   - Added lucide icons: `StickyNote`, `TrendingUp`, `ArrowUp`, `ArrowDown`, `ArrowUpDown`, `Download`, `Clock`.
+   - Added `Tabs, TabsContent, TabsList, TabsTrigger` from `@/components/ui/tabs`.
+   - Removed previously-unused `User` import (was dead code in the original file).
+
+2. New types & constants
+   - `type Interaction = { id, type, content, clientId, createdBy, createdAt }`.
+   - `type SortKey = "name" | "email" | "status" | "createdAt" | ""`.
+   - `INTERACTION_TYPES` array — 5 entries with `{ value, label, icon, color, bg }`:
+     - `call` → Phone (blue), `email` → Mail (emerald), `meeting` → Users (purple), `note` → StickyNote (amber), `deal` → TrendingUp (pink).
+   - `getInteractionMeta(type)` helper — looks up the matching type (falls back to "note").
+
+3. New component state (added inside `ClientsPage`, after existing state)
+   - `countryFilter`, `serviceFilter` ("all" defaults) — client-side filter dropdowns.
+   - `sortKey` ("" default = no sort), `sortDir` ("asc" | "desc").
+   - `modalTab` ("details" | "timeline").
+   - `interactions`, `interactionsLoading`, `newInteraction` ({ type: "note", content: "" }), `savingInteraction`.
+
+4. New functions
+   - `fetchInteractions(clientId)` — `GET /api/interactions?clientId=xxx`, sets `interactions` state.
+   - `onAddInteraction(e)` — validates content, `POST /api/interactions { type, content, clientId }`, refreshes list, clears form.
+   - `onDeleteInteraction(id)` — `confirm()` then `DELETE /api/interactions/[id]`, refreshes list.
+   - `toggleSort(k)` — cycles none → asc → desc → none for a given column.
+   - `resetFilters()` — clears search, status, country, service, sort.
+   - `SortHeader({ label, k })` — small inline button component showing label + sort indicator (ArrowUp / ArrowDown / ArrowUpDown-faded).
+   - `filteredClients = useMemo(...)` — applies country/service filters on top of fetched clients, then sorts (special-cases `createdAt` as date comparison; other keys use case-insensitive string compare).
+   - `hasActiveFilters` — derived boolean used to show/hide the "Réinitialiser" button.
+
+5. `openAdd` / `openEdit` updates
+   - Both now reset `modalTab` to "details".
+   - Both clear `interactions` array.
+   - `openEdit(c)` additionally calls `fetchInteractions(c.id)` so the Timeline tab loads fresh data when modal opens.
+
+6. CardHeader — advanced filters row
+   - Moved the "Actualiser" (refresh) button up next to a new "Export CSV" button (right side, top of card).
+   - Export CSV uses `<Button asChild variant="outline" size="sm"><a href="/api/clients/export" download>...</a></Button>` — produces a real `<a download>` so the browser triggers a CSV file download without a JS round-trip.
+   - New second filter row (below the title) containing 4 controls + reset:
+     - Status `<Select>` (existing server-side filter — kept as-is).
+     - Country `<Select>` populated from `COUNTRY_OPTIONS`.
+     - Service `<Select>` populated from `SERVICE_OPTIONS` (8 services — this is the canonical list used by `/api/dashboard/route.ts` SERVICES array; task mentioned "11 services" but codebase only has 8, kept existing list to stay consistent).
+     - Search `<Input>` (kept server-side with 300 ms debounce).
+     - "Réinitialiser" ghost button — appears only when `hasActiveFilters` is true; resets all filters + sort.
+   - `CardDescription` now shows "X clients · Y affichés" when filteredClients ≠ clients.
+
+7. Table — sortable headers + new "Créé le" column
+   - Replaced plain text column headers for Client / Contact / Statut with `<SortHeader>` buttons.
+   - Added a new sortable "Créé le" column (sorts by `createdAt`, formatted `dd MMM yyyy` via `toLocaleDateString("fr-FR")`).
+   - Added matching `<TableCell>` showing the formatted date in each row.
+   - Updated `colSpan` from 6 to 7 in both the loading skeleton row and the empty-state row.
+   - Empty state now distinguishes between "no client at all" (shows "Ajouter un client" button) and "no match for filters" (shows "Réinitialiser les filtres" button).
+   - Switched `clients.map(...)` → `filteredClients.map(...)` so the rendered list reflects country/service filters + active sort.
+
+8. Modal — wider + tabs
+   - Bumped modal width `max-w-lg` → `max-w-3xl`.
+   - Wrapped the existing Add/Edit `<form>` in a `<Tabs>` component with two tabs:
+     - **Détails** tab — contains the original form exactly as before (all 8 inputs + Annuler / Enregistrer buttons).
+     - **Timeline** tab — only rendered when `editing` is set (i.e. when viewing/editing an existing client; hidden for "Nouveau client" since there's no clientId yet).
+   - Timeline tab contents:
+     - Add-interaction form at the top: `<Select>` for type (5 INTERACTION_TYPES options) + `<Textarea>` for content + "Ajouter l'interaction" submit button.
+     - Timeline list below: vertical list with each item = circular colored icon (with `ring-4 ring-background` to mask the connecting line behind the icon) + connecting vertical line (`w-px flex-1 bg-border`) + content card with type label + localized date ("12 sept. 2026, 14:30") + content paragraph + Trash button (visible on hover via `group-hover:opacity-100`).
+   - Three states handled: loading skeleton (3 pulse bars), empty state (Clock icon + "Aucune interaction enregistrée pour ce client." message), and populated list.
+
+Lint / type-check:
+- `cd /home/z/my-project && bunx eslint "src/app/dashboard/clients/page.tsx" 2>&1 | tail -15` → EXIT_CODE=0, **0 errors, 0 warnings**.
+  - Fixed one parsing error mid-edit: the timeline item `<div className={`...${meta.bg} ${meta.color}...ring-4 ring-background">` was missing its closing backtick before `}` (only 1 backtick instead of 2) which produced an "Unterminated template literal" parse failure — corrected to `...ring-background`}>`.
+- `bunx tsc --noEmit --skipLibCheck` — no errors related to `src/app/dashboard/clients/page.tsx` (other errors reported are pre-existing in unrelated files: `lib/imap.ts`, `api/email-settings`, `api/appointments`, etc. — none introduced by this task).
+
+Stage Summary:
+- Clients page now has 3 new capabilities without touching the API:
+  1. **Interactions Timeline tab** in the Add/Edit modal — fetches `GET /api/interactions?clientId=xxx` on modal open, lets the user add (POST) and delete (DELETE) interactions, displays them as a vertical timeline with type-specific colored icons (Phone / Mail / Users / StickyNote / TrendingUp) and a connecting line.
+  2. **Export CSV button** — `<a href="/api/clients/export" download>` styled as a Button; downloads the full tenant clients list as `clients-2mails.csv` (handled by the existing `/api/clients/export` route).
+  3. **Advanced filters + sort** — added Country and Service `<Select>` dropdowns alongside the existing Status filter, plus a "Réinitialiser" reset button (only shown when filters are active). 4 column headers (Client / Contact / Statut / Créé le) are now click-sortable with ascending / descending / no-sort cycle and visual indicators.
+- Modal widened to `max-w-3xl` to fit the two-tab layout (Détails + Timeline). Timeline tab hidden when creating a new client (no clientId yet).
+- All existing functionality preserved — stats cards, search debounce, refresh button, status filter, CRUD operations, modal animations, toast notifications all work unchanged.
+- Lint clean, type-check clean for this file — ready for review.

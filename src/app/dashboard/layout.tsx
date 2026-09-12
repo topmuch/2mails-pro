@@ -17,6 +17,8 @@ import {
   Bell,
   Inbox,
   Wrench,
+  TrendingUp,
+  CheckSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -26,8 +28,10 @@ import { LanguageToggle } from "@/components/language-toggle";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Vue d'ensemble", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/stats", label: "Statistiques", icon: BarChart3 },
+  { href: "/dashboard/pipeline", label: "Pipeline", icon: TrendingUp },
+  { href: "/dashboard/taches", label: "Tâches", icon: CheckSquare },
   { href: "/dashboard/clients", label: "Clients", icon: Users },
+  { href: "/dashboard/calendrier", label: "Calendrier", icon: CalendarDays },
   { href: "/dashboard/equipe", label: "Équipe", icon: Users },
   { href: "/dashboard/messages", label: "Messages", icon: Mail },
   { href: "/dashboard/messagerie", label: "Messagerie", icon: Inbox },
