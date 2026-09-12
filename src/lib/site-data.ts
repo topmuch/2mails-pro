@@ -1,22 +1,21 @@
 import {
-  Plane,
-  Ship,
-  Truck,
-  PackageCheck,
-  Warehouse,
-  FileCheck2,
-  Anchor,
-  Boxes,
+  TrendingUp,
+  Users,
+  Mail,
+  CheckSquare,
+  CalendarDays,
+  BarChart3,
+  Building2,
+  Send,
   Globe2,
   ShieldCheck,
-  Users,
-  Clock,
-  Route,
-  HandshakeIcon,
   Sparkles,
-  ShoppingCart,
-  Wrench,
-  Ship as ShipIcon,
+  Zap,
+  Clock,
+  Code2,
+  Moon,
+  HandshakeIcon,
+  Star,
   type LucideIcon,
 } from "lucide-react";
 
@@ -43,320 +42,253 @@ export type Service = {
   highlights: { title: string; desc: string }[];
 };
 
+/**
+ * 2mails.pro — Modules CRM SaaS.
+ * Chaque "service" correspond à un module du produit, pas à une prestation logistique.
+ */
 export const SERVICES: Service[] = [
   {
-    slug: "transport-maritime",
-    icon: Ship,
-    title: "Transport Maritime",
-    shortTitle: "Maritime",
-    desc: "Fret maritime complet, FCL/LCL, groupage et rendu destination finale pour vos marchandises vers et depuis Dakar.",
-    image: "/svc-maritime.jpg",
-    longDesc:
-      "Notre service de transport maritime couvre l'ensemble de vos besoins d'import et d'export depuis et vers le Port de Dakar, véritable hub maritime de l'Afrique de l'Ouest. Nous gérons les conteneurs FCL (Full Container Load) et LCL (Less than Container Load), le conventionnel, le groupage et le rendu destination finale. Grâce à nos partenariats avec les compagnies maritimes de la place, nous négocions les meilleurs tarifs et délais pour votre fret, tout en assurant un suivi constant de vos marchandises depuis l'embarquement jusqu'à la livraison.",
-    features: [
-      "Fret FCL (conteneur complet) et LCL (groupage)",
-      "Import / Export vers toutes destinations",
-      "Conventionnel, Ro-Ro et marchandises diverses",
-      "Rendu destination finale (door-to-door)",
-      "Négociation tarifaire avec compagnies maritimes",
-      "Suivi et tracking des conteneurs",
-      "Gestion des documents B/L, connaissements",
-      "Assurance marchandise sur demande",
-    ],
-    highlights: [
-      { title: "Port de Dakar", desc: "Hub maritime de référence en Afrique de l'Ouest" },
-      { title: "Tous modes", desc: "FCL, LCL, conventionnel et groupage" },
-      { title: "Door-to-door", desc: "Livraison jusqu'à la destination finale" },
-    ],
-  },
-  {
-    slug: "transport-aerien",
-    icon: Plane,
-    title: "Transport Aérien",
-    shortTitle: "Aérien",
-    desc: "Solutions de fret aérien express avec suivi dédié, idéal pour les colis sensibles et urgents.",
-    image: "/svc-aerien.jpg",
-    longDesc:
-      "Pour vos envois urgents et sensibles, notre service de transport aérien offre des solutions express avec un suivi dédié de bout en bout. Nous opérons depuis l'Aéroport International Blaise Diagne de Dakar vers toutes destinations mondiales. Nos équipes prennent en charge la réservation, la préparation des marchandises, les formalités de douane et la livraison finale. Le fret aérien est particulièrement adapté aux colis à forte valeur ajoutée, aux pièces détachées urgentes, aux échantillons et aux marchandises périssables nécessitant des délais courts.",
-    features: [
-      "Fret aérien express (standard et prioritaire)",
-      "Import / Export international",
-      "Colis sensibles et haute valeur",
-      "Marchandises périssables et urgences",
-      "Suivi dédié en temps réel",
-      "Préparation et emballage adaptés",
-      "Formalités douanières incluses",
-      "Livraison finale door-to-door",
-    ],
-    highlights: [
-      { title: "Express", desc: "Solutions urgentes pour vos envois prioritaires" },
-      { title: "Suivi dédié", desc: "Tracking en temps réel de vos marchandises" },
-      { title: "Toutes destinations", desc: "Vers et depuis l'aéroport de Dakar" },
-    ],
-  },
-  {
-    slug: "transport-routier-multimodal",
-    icon: Truck,
-    title: "Transport Routier & Multimodal",
-    shortTitle: "Routier & Multimodal",
-    desc: "Acheminement terrestre et solutions multimodales door-to-door vers le Mali, la Guinée, la Mauritanie et la Gambie.",
-    image: "/svc-routier.jpg",
-    longDesc:
-      "Notre service de transport routier et multimodal assure l'acheminement de vos marchandises depuis Dakar vers les pays de la sous-région : Mali, Guinée, Guinée-Bissau, Mauritanie et Gambie. Nous combinons plusieurs modes de transport (route, mer, air) pour optimiser les coûts et les délais selon vos contraintes. Nos chauffeurs et partenaires expérimentés connaissent parfaitement les corridors ouest-africains et leurs particularités douanières. Le transport multimodal door-to-door vous garantit une prise en charge complète, de l'enlèvement jusqu'à la livraison finale.",
-    features: [
-      "Transport routier national et sous-régional",
-      "Solutions multimodales combinées (mer/route/air)",
-      "Corridors Mali, Guinée, Mauritanie, Gambie",
-      "Livraison door-to-door",
-      "Suivi GPS et reporting régulier",
-      "Flotte de partenaires agréés",
-      "Gestion des formalités de transit frontalier",
-      "Marchandises générales et spéciales",
-    ],
-    highlights: [
-      { title: "Sous-région", desc: "Mali, Guinée, Mauritanie, Gambie" },
-      { title: "Multimodal", desc: "Combinaison mer / route / air optimisée" },
-      { title: "Door-to-door", desc: "De l'enlèvement à la livraison finale" },
-    ],
-  },
-  {
-    slug: "transit-dedouanement",
-    icon: FileCheck2,
-    title: "Transit & Dédouanement",
-    shortTitle: "Transit & Douane",
-    desc: "Commissionnaire en douane agréé : formalités douanières, dédouanement import/export et gestion des régimes particuliers.",
-    image: "/svc-transit.jpg",
-    longDesc:
-      "En tant qu'établissement de Transit et commissionnaire en Douane agréé, 2mails.pro prend en charge l'ensemble des formalités douanières de vos opérations d'import et d'export. Nos équipes expérimentées maîtrisent la réglementation douanière sénégalaise et les régimes particuliers (entrepôt sous douane, admission temporaire, transit, perfectionnement, etc.). Nous assurons la préparation et le dépôt des déclarations en douane, le calcul des droits et taxes, la gestion des régimes préférentiels et les relations avec les autorités douanières. Notre agrément garantit conformité, fiabilité et rapidité.",
-    features: [
-      "Commissionnaire en douane agréé",
-      "Dédouanement import et export",
-      "Déclarations en douane (D48, manifeste)",
-      "Régimes particuliers (entrepôt, AT, transit)",
-      "Calcul des droits et taxes",
-      "Régimes préférentiels et certificats d'origine",
-      "Relations avec autorités douanières",
-      "Conseil en réglementation",
-    ],
-    highlights: [
-      { title: "Agréé", desc: "Commissionnaire en douane officiellement agréé" },
-      { title: "Tous régimes", desc: "Import, export et régimes particuliers" },
-      { title: "Expertise", desc: "Équipes de 5 à 20 ans d'expérience" },
-    ],
-  },
-  {
-    slug: "entreposage-sous-douane",
-    icon: Warehouse,
-    title: "Entreposage sous Douane",
-    shortTitle: "Entreposage",
-    desc: "Stockage en magasin ou à ciel ouvert, entrepôt sous douane et gestion d'inventaire sécurisée.",
-    image: "/svc-entrepot.jpg",
-    longDesc:
-      "Notre service d'entreposage sous douane vous permet de stocker vos marchandises en suspension des droits et taxes jusqu'à leur mise à la consommation ou leur réexportation. Nous proposons du stockage en magasin couvert et à ciel ouvert, adapté à tous types de marchandises. La gestion d'inventaire est entièrement sécurisée et informatisée, avec un suivi précis des entrées et sorties. L'entrepôt sous douane offre une flexibilité fiscale majeure : vous ne payez les droits qu'au moment de la sortie des marchandises vers le marché local.",
-    features: [
-      "Entrepôt sous douane agréé",
-      "Stockage en magasin couvert",
-      "Stockage à ciel ouvert",
-      "Suspension des droits et taxes",
-      "Gestion d'inventaire informatisée",
-      "Sécurité 24/7 et contrôle d'accès",
-      "Marchandises en attente de dédouanement",
-      "Réexportation et mise à la consommation",
-    ],
-    highlights: [
-      { title: "Suspension fiscale", desc: "Pas de droits tant que la marchandise reste stockée" },
-      { title: "Flexible", desc: "Magasin couvert ou aire ouverte" },
-      { title: "Sécurisé", desc: "Surveillance et gestion d'inventaire" },
-    ],
-  },
-  {
-    slug: "supply-chain-logistique",
-    icon: Boxes,
-    title: "Supply Chain & Logistique",
-    shortTitle: "Supply Chain",
-    desc: "Optimisation globale de votre chaîne d'approvisionnement, de l'origine à la destination finale.",
+    slug: "pipeline-ventes",
+    icon: TrendingUp,
+    title: "Pipeline de ventes",
+    shortTitle: "Pipeline",
+    desc: "Tableau Kanban drag & drop pour suivre vos opportunités, de la prospection à la signature.",
     image: "/svc-supplychain.jpg",
     longDesc:
-      "Notre service de Supply Chain & Logistique vous accompagne dans l'optimisation globale de votre chaîne d'approvisionnement. De l'approvisionnement à la livraison finale, nous coordonnons l'ensemble des flux (matières, produits, informations) pour réduire vos coûts, améliorer vos délais et garantir la satisfaction de vos clients. Nous analysons vos processus, identifions les goulots d'étranglement et proposons des solutions sur mesure : consolidation des expéditions, optimisation des itinéraires, gestion des stocks, coordination des transporteurs. Notre approche proactive anticipe les aléas pour sécuriser vos opérations.",
+      "Le module Pipeline de 2mails.pro centralise toutes vos opportunités commerciales dans un tableau Kanban glisser-déposer. Personnalisez les étapes (lead, qualifié, proposition, négociation, gagné/perdu), suivez la valeur de chaque deal, attribuez des responsables et visualisez vos prévisions de revenus en temps réel. Idéal pour piloter une équipe commerciale sans tableurs Excel.",
     features: [
-      "Optimisation de la chaîne d'approvisionnement",
-      "Coordination des flux physiques et informationnels",
-      "Consolidation et groupage d'expéditions",
-      "Gestion des stocks et approvisionnement",
-      "Planification et optimisation des itinéraires",
-      "Coordination multi-transporteurs",
-      "Reporting et KPI logistiques",
-      "Conseil et audit logistique",
+      "Vue Kanban glisser-déposer",
+      "Étapes personnalisables par organisation",
+      "Valeur estimée et probabilité de closing",
+      "Attribution à un responsable",
+      "Date de clôture prévisionnelle",
+      "Filtres par étape, responsable, période",
+      "Prévisions de revenus consolidées",
+      "Historique des changements d'étape",
     ],
     highlights: [
-      { title: "Approche globale", desc: "De l'origine à la destination finale" },
-      { title: "Sur mesure", desc: "Solutions adaptées à chaque client" },
-      { title: "Proactive", desc: "Anticipation des aléas et risques" },
+      { title: "Kanban", desc: "Glisser-déposer intuitif" },
+      { title: "Prévisions", desc: "Revenus consolidés par étape" },
+      { title: "Personnalisable", desc: "Étapes adaptées à votre cycle de vente" },
     ],
   },
   {
-    slug: "manutention-colis-lourd",
-    icon: PackageCheck,
-    title: "Manutention de Colis Lourd",
-    shortTitle: "Colis Lourd",
-    desc: "Heavy lift oncarriage : manutention et transport de colis hors gabarit avec équipements adaptés.",
-    image: "/svc-colislourd.jpg",
-    longDesc:
-      "Notre service de manutention de colis lourd (heavy lift oncarriage) prend en charge le transport et la manipulation de marchandises hors gabarit, surdimensionnées ou de poids exceptionnel. Nous disposons d'équipements spécialisés (grues, chariots élévateurs lourds, remorques multi-essieux) et d'équipes formées aux opérations de levage complexes. Ce service est particulièrement adapté aux équipements industriels, aux matériels de BTP, aux turbines, transformateurs et autres colis hors normes. Nous gérons l'ensemble : déchargement portuaire, transport routier renforcé et livraison sur site.",
-    features: [
-      "Heavy lift oncarriage",
-      "Marchandises hors gabarit et surdimensionnées",
-      "Poids et dimensions exceptionnels",
-      "Équipements spécialisés (grues, remorques)",
-      "Déchargement et chargement portuaire",
-      "Transport routier renforcé",
-      "Levage et positionnement sur site",
-      "Études de faisabilité et d'itinéraire",
-    ],
-    highlights: [
-      { title: "Hors gabarit", desc: "Colis surdimensionnés et exceptionnels" },
-      { title: "Équipements", desc: "Grues et remorques spécialisées" },
-      { title: "Clé en main", desc: "Du port jusqu'au site final" },
-    ],
-  },
-  {
-    slug: "freight-forwarding",
-    icon: Anchor,
-    title: "Freight Forwarding",
-    shortTitle: "Freight Forwarding",
-    desc: "Organisation complète de vos flux de marchandises avec un réseau de sous-traitants agréés.",
-    image: "/svc-freight.jpg",
-    longDesc:
-      "En tant que freight forwarder, 2mails.pro organise et coordonne l'ensemble de vos flux de marchandises à l'international. Nous agissons comme votre partenaire unique, en sélectionnant et en supervisant les meilleurs transporteurs, manutentionnaires et transitaires pour chaque étape de votre expédition. Notre réseau de sous-traitants agréés est encadré par des cahiers des charges stricts avec des obligations de part et d'autre, garantissant la qualité et la fiabilité de chaque opération. Nous négocions les tarifs, planifions les itinéraires, gérons la documentation et assurons le suivi de bout en bout.",
-    features: [
-      "Organisation complète des flux internationaux",
-      "Partenaire unique pour toutes vos expéditions",
-      "Réseau de sous-traitants agréés et encadrés",
-      "Sélection et supervision des transporteurs",
-      "Négociation tarifaire multi-modes",
-      "Documentation et gestion documentaire",
-      "Suivi de bout en bout",
-      "Cahiers des charges et qualité garantie",
-    ],
-    highlights: [
-      { title: "Partenaire unique", desc: "Un interlocuteur pour tous vos flux" },
-      { title: "Réseau agréé", desc: "Sous-traitants encadrés par cahier des charges" },
-      { title: "Bout en bout", desc: "De l'origine à la destination finale" },
-    ],
-  },
-  {
-    slug: "vente-transport",
-    icon: ShoppingCart,
-    title: "Vente de Transport",
-    shortTitle: "Vente Transport",
-    desc: "Vente de solutions de transport adaptées à vos besoins, avec un accompagnement complet.",
-    image: "/svc-routier.jpg",
-    longDesc:
-      "2mails.pro propose la vente de solutions de transport adaptées aux besoins spécifiques de chaque client. Grâce à notre contrat de représentativité en Afrique de l'Ouest avec ARS Rental, nous mettons à votre disposition des engins et du matériel de manutention et transport de dernière génération. Que vous ayez besoin d'acquérir un véhicule utilitaire, un camion ou un équipement de transport spécialisé, nous vous accompagnons dans votre choix avec des solutions techniques et financières sur mesure.",
-    features: [
-      "Vente de véhicules utilitaires et camions",
-      "Matériel de transport de dernière génération",
-      "Solutions techniques adaptées",
-      "Accompagnement dans le choix d'équipement",
-      "Contrat de représentativité ARS Rental",
-      "Solutions financières sur mesure",
-      "Conseil en acquisition",
-      "Suivi après-vente",
-    ],
-    highlights: [
-      { title: "ARS Rental", desc: "Représentant officiel en Afrique de l'Ouest" },
-      { title: "Dernière génération", desc: "Engins et matériel récents" },
-      { title: "Sur mesure", desc: "Solutions adaptées à chaque besoin" },
-    ],
-  },
-  {
-    slug: "location-materiel-manutention",
-    icon: Wrench,
-    title: "Location Matériel de Manutention",
-    shortTitle: "Location Manutention",
-    desc: "Vente ou location longue durée de matériel de manutention de dernière génération.",
+    slug: "gestion-clients",
+    icon: Users,
+    title: "Gestion des clients",
+    shortTitle: "Clients",
+    desc: "Fiche 360° avec timeline d'interactions, historique des échanges, pièces jointes et notes.",
     image: "/svc-entrepot.jpg",
     longDesc:
-      "En partenariat avec ARS Rental, 2mails.pro propose la vente ou la location longue durée de matériel de manutention de dernière génération. Notre catalogue comprend chariots élévateurs, transpalettes, grues mobiles, nacelles élévatrices et tout équipement nécessaire à la manutention de vos marchandises. La location longue durée vous offre la flexibilité d'un équipement récent et maintenu sans les contraintes de la propriété, avec des conditions adaptées à votre activité.",
+      "Le module Clients de 2mails.pro est votre CRM centralisé : créez, éditez et supprimez vos contacts, suivez chaque interaction (appels, emails, rendez-vous, notes), associez vos clients à des deals et des tâches, et gardez un historique complet de votre relation. Chaque fiche client est privée à votre organisation (multi-tenant).",
     features: [
-      "Chariots élévateurs et transpalettes",
-      "Grues mobiles et nacelles élévatrices",
-      "Location longue durée flexible",
-      "Vente d'équipement neuf et récent",
-      "Matériel de dernière génération",
-      "Maintenance incluse en location",
-      "Contrat ARS Rental",
-      "Solutions adaptées à votre activité",
+      "Fiche client complète (nom, société, email, téléphone, pays)",
+      "Timeline d'interactions (appels, emails, meetings, notes)",
+      "Pièces jointes et notes collaboratives",
+      "Statut prospect / actif / inactif",
+      "Lien avec deals, tâches et rendez-vous",
+      "Recherche et filtres avancés",
+      "Isolation multi-tenant",
+      "Import / export CSV",
     ],
     highlights: [
-      { title: "Longue durée", desc: "Vente ou location flexible" },
-      { title: "Partenaire ARS Rental", desc: "Représentant exclusif Afrique de l'Ouest" },
-      { title: "Maintenance", desc: "Incluse en location longue durée" },
+      { title: "360°", desc: "Vue d'ensemble du client" },
+      { title: "Timeline", desc: "Historique complet des échanges" },
+      { title: "Privé", desc: "Données isolées par organisation" },
     ],
   },
   {
-    slug: "location-materiel-portuaire",
-    icon: ShipIcon,
-    title: "Location Matériel Portuaire",
-    shortTitle: "Location Portuaire",
-    desc: "Vente ou location longue durée de matériel portuaire pour vos opérations au Port de Dakar.",
-    image: "/svc-maritime.jpg",
+    slug: "messagerie-integree",
+    icon: Mail,
+    title: "Messagerie intégrée",
+    shortTitle: "Messagerie",
+    desc: "Connexion IMAP / SMTP native. Envoyez et recevez vos emails directement depuis le CRM.",
+    image: "/svc-freight.jpg",
     longDesc:
-      "2mails.pro, en tant que représentant d'ARS Rental en Afrique de l'Ouest, propose la vente ou la location longue durée de matériel portuaire de dernière génération. Notre offre couvre les grues de port, les reach stackers, les tracteurs portuaires, les chariots cavaliers et tout le matériel nécessaire à la manutention portuaire. Ces équipements sont indispensables pour les opérations de chargement et déchargement des navires, la manipulation des conteneurs et l'optimisation des flux dans les terminaux portuaires de Dakar.",
+      "Le module Messagerie de 2mails.pro connecte votre boîte mail (IMAP/SMTP) au CRM. Plus besoin de changer d'onglet : lisez, répondeez et archivez vos emails depuis l'interface. Chaque message est rattachable à un client, une opportunité ou une tâche, et alimente automatiquement la timeline d'interactions.",
     features: [
-      "Grues de port et reach stackers",
-      "Tracteurs portuaires et chariots cavaliers",
-      "Vente ou location longue durée",
-      "Matériel portuaire de dernière génération",
-      "Optimisation des opérations portuaires",
-      "Maintenance et support technique",
-      "Contrat ARS Rental",
-      "Adapté au Port de Dakar",
+      "Connexion IMAP / SMTP sécurisée",
+      "Réception et envoi d'emails",
+      "Rattachement à un client ou un deal",
+      "Notifications de nouveaux emails",
+      "Modèles d'emails réutilisables",
+      "Pièces jointes",
+      "Tri par dossier IMAP",
+      "Recherche plein texte",
     ],
     highlights: [
-      { title: "Matériel portuaire", desc: "Grues, reach stackers, tracteurs" },
-      { title: "Port de Dakar", desc: "Adapté aux opérations locales" },
-      { title: "ARS Rental", desc: "Représentant officiel en Afrique de l'Ouest" },
+      { title: "IMAP / SMTP", desc: "Compatible tout fournisseur" },
+      { title: "Centralisé", desc: "Email + CRM au même endroit" },
+      { title: "Traçable", desc: "Alimente la timeline client" },
+    ],
+  },
+  {
+    slug: "taches-rappels",
+    icon: CheckSquare,
+    title: "Tâches & rappels",
+    shortTitle: "Tâches",
+    desc: "Créez des tâches liées à un client ou un deal, fixez des échéances et ne ratez plus rien.",
+    image: "/svc-transit.jpg",
+    longDesc:
+      "Le module Tâches de 2mails.pro vous aide à ne plus rien oublier : créez des tâches, associez-les à un client ou une opportunité, fixez une priorité et une échéance, et suivez leur statut (en attente, en cours, terminée, annulée). Les tâches peuvent être attribuées à un membre de l'équipe pour répartir la charge de travail.",
+    features: [
+      "Tâches liées à un client ou un deal",
+      "Priorités (basse, moyenne, haute)",
+      "Date d'échéance et rappels",
+      "Attribution à un membre de l'équipe",
+      "Statuts (en attente, en cours, terminée)",
+      "Filtres par assigné, priorité, échéance",
+      "Vue liste et tableau Kanban",
+      "Notifications",
+    ],
+    highlights: [
+      { title: "Liée", desc: "Tâche rattachée à un client ou deal" },
+      { title: "Rappels", desc: "Échéances et notifications" },
+      { title: "Équipe", desc: "Attribution et suivi collaboratif" },
+    ],
+  },
+  {
+    slug: "calendrier-rendez-vous",
+    icon: CalendarDays,
+    title: "Calendrier & rendez-vous",
+    shortTitle: "Calendrier",
+    desc: "Planifiez vos rendez-vous, visualisez votre agenda et synchronisez vos contacts clients.",
+    image: "/svc-routier.jpg",
+    longDesc:
+      "Le module Calendrier de 2mails.pro vous permet de planifier vos rendez-vous, de les associer à un client et de visualiser votre agenda en un coup d'œil. Les demandes de rendez-vous issues du formulaire public sont automatiquement collectées et rattachées au tenant concerné.",
+    features: [
+      "Vue agenda mensuelle",
+      "Demandes de rendez-vous depuis le site public",
+      "Statut (en attente, confirmé, annulé)",
+      "Association à un client",
+      "Date et créneau horaire",
+      "Notes et sujet du RDV",
+      "Notifications de nouvelles demandes",
+      "Liste filtrable",
+    ],
+    highlights: [
+      { title: "Agenda", desc: "Vue mensuelle claire" },
+      { title: "Formulaire public", desc: "Demandes entrantes automatiques" },
+      { title: "Lié au client", desc: "RDV rattaché à un contact" },
+    ],
+  },
+  {
+    slug: "statistiques-analytics",
+    icon: BarChart3,
+    title: "Statistiques & analytics",
+    shortTitle: "Analytics",
+    desc: "Tableaux de bord en temps réel : conversion, pipeline, activité email, performance par utilisateur.",
+    image: "/svc-maritime.jpg",
+    longDesc:
+      "Le module Analytics de 2mails.pro transforme vos données CRM en tableaux de bord exploitables : suivi des vues de pages, taux de conversion du pipeline, activité email par utilisateur, performance commerciale, top clients. Toutes les métriques sont mises à jour en temps réel et filtrables par période.",
+    features: [
+      "Tableau de bord temps réel",
+      "Taux de conversion par étape du pipeline",
+      "Activité email par utilisateur",
+      "Top clients et top deals",
+      "Vues de pages et sessions",
+      "Performance commerciale",
+      "Export des données",
+      "Filtres par période",
+    ],
+    highlights: [
+      { title: "Temps réel", desc: "Données à jour en continu" },
+      { title: "Actionnable", desc: "Indicateurs prêts à la décision" },
+      { title: "Export", desc: "CSV et tableur" },
+    ],
+  },
+  {
+    slug: "multi-tenant-isolation",
+    icon: Building2,
+    title: "Multi-tenant & isolation",
+    shortTitle: "Multi-tenant",
+    desc: "Chaque organisation dispose de son propre espace privé. Données strictement isolées par tenant.",
+    image: "/svc-entrepot.jpg",
+    longDesc:
+      "2mails.pro est conçu dès le départ comme un SaaS multi-tenant : chaque organisation possède son propre espace de travail, avec ses clients, deals, tâches, emails et paramètres. Aucune donnée ne circule entre organisations. Les rôles (admin, manager, agent) contrôlent les permissions au sein de chaque tenant.",
+    features: [
+      "Isolation stricte des données par organisation",
+      "Rôles (super_admin, admin, manager, agent)",
+      "Invitation d'utilisateurs par email",
+      "Limites d'utilisateurs par plan",
+      "Paramètres par tenant (SEO, emails, maintenance)",
+      "Domaine personnalisé (à venir)",
+      "Statistiques par tenant",
+      "Sécurité et confidentialité",
+    ],
+    highlights: [
+      { title: "Isolé", desc: "Vos données ne fuient jamais" },
+      { title: "Rôles", desc: "Admin / manager / agent" },
+      { title: "Invitations", desc: "Ajoutez vos collègues par email" },
+    ],
+  },
+  {
+    slug: "personnalisation-api",
+    icon: Code2,
+    title: "Personnalisation & API",
+    shortTitle: "API",
+    desc: "Thèmes clair/sombre, SEO par tenant, et API REST pour intégrer 2mails.pro à vos outils.",
+    image: "/svc-aerien.jpg",
+    longDesc:
+      "2mails.pro s'adapte à votre marque et à vos outils : personnalisez le titre SEO et la description de votre espace, activez le mode maintenance, basculez entre thème clair et sombre, et intégrez le CRM à vos workflows via l'API REST. La localisation FR / EN est intégrée.",
+    features: [
+      "Thème clair / sombre",
+      "Localisation FR / EN",
+      "Paramètres SEO par tenant",
+      "Mode maintenance programmable",
+      "API REST documentée",
+      "Webhooks (à venir)",
+      "Personnalisation de l'identité",
+      "Intégrations à venir (Zapier, Make)",
+    ],
+    highlights: [
+      { title: "FR / EN", desc: "Localisation native" },
+      { title: "API REST", desc: "Pour vos intégrations" },
+      { title: "Thème", desc: "Clair / sombre au choix" },
     ],
   },
 ];
 
 export const SERVICE_HIGHLIGHTS = [
   {
-    img: "/truck.jpg",
-    title: "Transport Routier",
-    sub: "Vers Mali, Guinée, Mauritanie, Gambie",
+    img: "/hero-port.jpg",
+    title: "Pipeline de ventes",
+    sub: "Kanban drag & drop",
   },
   {
     img: "/airfreight.jpg",
-    title: "Fret Aérien",
-    sub: "Solutions express & suivi dédié",
+    title: "Messagerie intégrée",
+    sub: "IMAP / SMTP natif",
   },
   {
-    img: "/hero-port.jpg",
-    title: "Fret Maritime",
-    sub: "FCL / LCL / groupage",
+    img: "/warehouse.jpg",
+    title: "Multi-tenant",
+    sub: "Données isolées par org",
   },
 ];
 
+/**
+ * Points forts affichés sur la page d'accueil / À propos.
+ * (Anciennement COUNTRIES — remplacé par des features clés du produit.)
+ */
 export type Country = { name: string; base?: boolean };
 
 export const COUNTRIES: Country[] = [
-  { name: "Sénégal", base: true },
-  { name: "Mali" },
-  { name: "Guinée" },
-  { name: "Guinée-Bissau" },
-  { name: "Mauritanie" },
-  { name: "Gambie" },
+  { name: "Multi-tenant", base: true },
+  { name: "FR / EN" },
+  { name: "Dark mode" },
+  { name: "API REST" },
+  { name: "IMAP / SMTP" },
+  { name: "Rôles & permissions" },
 ];
 
 export type Stat = { value: string; label: string; icon: LucideIcon };
 
 export const STATS: Stat[] = [
-  { value: "2019", label: "Année de création", icon: Clock },
-  { value: "5+", label: "Pays desservis", icon: Globe2 },
-  { value: "5–20 ans", label: "Expérience des équipes", icon: Users },
-  { value: "8", label: "Services spécialisés", icon: Route },
+  { value: "8", label: "Modules CRM", icon: Code2 },
+  { value: "FR/EN", label: "Bilingue", icon: Globe2 },
+  { value: "∞", label: "Clients par plan Pro", icon: Users },
+  { value: "24/7", label: "Disponibilité SaaS", icon: Clock },
 ];
 
 export type Atout = {
@@ -367,24 +299,24 @@ export type Atout = {
 
 export const WHY_US: Atout[] = [
   {
-    icon: Sparkles,
-    title: "Approche proactive",
-    desc: "Une solution sur mesure à chaque client, de l'origine jusqu'à la destination finale, avec anticipation des aléas.",
+    icon: Building2,
+    title: "Multi-tenant natif",
+    desc: "Chaque organisation dispose de son propre espace privé, strictement isolé des autres. Vos données clients ne fuient jamais.",
   },
   {
-    icon: HandshakeIcon,
-    title: "Sous-traitants agréés",
-    desc: "Nous collaborons avec des partenaires validés selon des cahiers des charges avec obligations de part et d'autre.",
+    icon: Globe2,
+    title: "Bilingue FR / EN",
+    desc: "Interface traduite en français et en anglais, pour servir vos équipes et vos clients partout en Europe et en Afrique.",
   },
   {
     icon: ShieldCheck,
-    title: "Agréé en douane",
-    desc: "Établissement de Transit et commissionnaire en Douane agréé, garantissant conformité et fiabilité.",
+    title: "Sécurité & rôles",
+    desc: "Permissions par rôle (admin, manager, agent), mots de passe hachés (SHA-256) et sessions sécurisées par cookie httpOnly.",
   },
   {
-    icon: Users,
-    title: "Équipes confirmées",
-    desc: "Des collaborateurs qualifiés capitalisant entre 5 et 20 ans d'expérience en opérations nationales et internationales.",
+    icon: Zap,
+    title: "Déploiement rapide",
+    desc: "Inscription en 30 secondes, plan Free jusqu'à 2 utilisateurs. Aucune installation, accessible depuis n'importe quel navigateur.",
   },
 ];
 
@@ -393,60 +325,60 @@ export type ProcessStep = { step: string; title: string; desc: string };
 export const PROCESS: ProcessStep[] = [
   {
     step: "01",
-    title: "Prise en charge",
-    desc: "Analyse de votre besoin et élaboration d'une solution sur mesure, de l'origine à la destination.",
+    title: "Inscription",
+    desc: "Créez votre organisation en 30 secondes, gratuitement, sans carte bancaire.",
   },
   {
     step: "02",
-    title: "Transit & Dédouanement",
-    desc: "Gestion complète des formalités douanières et réglementaires par nos équipes agréées.",
+    title: "Configuration",
+    desc: "Renseignez vos paramètres SMTP/IMAP, votre SEO et invitez votre équipe par email.",
   },
   {
     step: "03",
-    title: "Transport & Manutention",
-    desc: "Acheminement multimodal, manutention de colis lourds et suivi de la marchandise.",
+    title: "Import des clients",
+    desc: "Ajoutez vos clients et opportunités, ou importez-les en CSV depuis votre ancien outil.",
   },
   {
     step: "04",
-    title: "Livraison finale",
-    desc: "Mise à disposition door-to-door avec confirmation de réception et clôture du dossier.",
+    title: "Pilotage",
+    desc: "Suivez votre pipeline, vos tâches et vos statistiques depuis un tableau de bord unifié.",
   },
 ];
 
 export const FAQS = [
   {
-    q: "Quels types de marchandises 2mails.pro prend-elle en charge ?",
-    a: "Nous traitons une large gamme de marchandises : conteneurisées, conventionnelles, colis lourds et hors gabarit, ainsi que les marchandises nécessitant un régime sous douane. Nos équipes adaptent les ressources à chaque type d'opération.",
+    q: "2mails.pro est-il un CRM ou un outil d'email ?",
+    a: "Les deux. 2mails.pro combine un CRM complet (clients, pipeline, tâches, calendrier, analytics) et une messagerie intégrée IMAP/SMTP. Vous gérez votre relation client et vos emails depuis la même interface.",
   },
   {
-    q: "Intervenez-vous dans les pays voisins du Sénégal ?",
-    a: "Oui. Depuis Dakar, nous étendons nos opérations vers le Mali, la Guinée, la Guinée-Bissau, la Mauritanie et la Gambie, en transport routier et multimodal, avec un réseau de sous-traitants agréés.",
+    q: "Mes données sont-elles isolées des autres organisations ?",
+    a: "Oui. 2mails.pro est un SaaS multi-tenant : chaque organisation possède son propre espace privé. Vos clients, deals, tâches et emails ne sont jamais visibles par une autre organisation.",
   },
   {
-    q: "Êtes-vous agréés en tant que commissionnaire en douane ?",
-    a: "Oui. 2mails.pro est un établissement de Transit et commissionnaire en Douane agréé. Nous gérons l'ensemble des formalités douanières import/export et les régimes particuliers.",
+    q: "Puis-je inviter mes collègues ?",
+    a: "Oui. L'administrateur peut inviter des utilisateurs par email, avec un rôle (admin, manager, agent). Chaque invitation expire après 7 jours pour des raisons de sécurité.",
   },
   {
-    q: "Comment obtenir un devis ?",
-    a: "Utilisez le formulaire de contact de la page Contact ou écrivez-nous à contact@2mails.pro. Nos équipes vous répondront avec une proposition sur mesure dans les meilleurs délais.",
+    q: "Comment démarrer ?",
+    a: "Inscrivez-vous gratuitement sur /register, créez votre organisation (2 utilisateurs inclus), puis configurez votre boîte email IMAP/SMTP. Aucune carte bancaire requise.",
   },
 ];
 
 // ---- Coordonnées de l'entreprise ----
 export const COMPANY = {
-  addressLine1: "Immeuble Kalimo Consulting Group",
-  addressLine2: "Villa 2105, SICAP Liberté 1",
-  city: "Dakar",
-  country: "Sénégal",
-  phone: "+221 33 864 52 41",
-  phoneHref: "+221338645241",
-  phoneSecondary: "+221 33 821 11 31",
-  phoneSecondaryHref: "+221338211131",
+  addressLine1: "2mails.pro",
+  addressLine2: "Service en ligne (SaaS)",
+  city: "Paris",
+  country: "France",
+  phone: "+33 1 84 80 00 00",
+  phoneHref: "+33184800000",
+  phoneSecondary: "+33 1 84 80 00 01",
+  phoneSecondaryHref: "+33184800001",
   email: "contact@2mails.pro",
-  founded: "2019",
+  founded: "2024",
 };
 
-// ---- Nos partenaires ----
+// ---- Nos partenaires / intégrations ----
 export type Partner = {
   name: string;
   logo: string;
@@ -456,15 +388,15 @@ export type Partner = {
 
 export const PARTNERS: Partner[] = [
   {
-    name: "ARS Rental",
-    logo: "/partner-ars-rental.png",
-    role: "Représentant officiel en Afrique de l'Ouest",
+    name: "Intégrations email",
+    logo: "/logo-2mails-transparent.png",
+    role: "IMAP / SMTP standard",
     description:
-      "Grâce à notre contrat de représentativité en Afrique de l'Ouest avec ARS Rental, nous sommes en mesure de fournir en location ou à la vente des engins et du matériel de manutention et transport de dernière génération.",
+      "2mails.pro se connecte à tout fournisseur d'email supportant IMAP et SMTP : Gmail, Outlook, OVH, Infomaniak, etc. Vos emails restent chez votre hébergeur, le CRM s'contente de les lire et d'en envoyer.",
   },
 ];
 
-// ---- Références clients ----
+// ---- Témoignages clients (placeholder) ----
 export type Reference = {
   name: string;
   logo: string;
@@ -473,23 +405,8 @@ export type Reference = {
 
 export const REFERENCES: Reference[] = [
   {
-    name: "UNICEF",
-    logo: "/ref-unicef.png",
-    desc: "Fonds des Nations Unies pour l'enfance",
-  },
-  {
-    name: "ITS Sénégal",
-    logo: "/ref-its.png",
-    desc: "Institut de Technologies du Sénégal",
-  },
-  {
-    name: "Ministère de la Santé et de l'Hygiène Publique",
-    logo: "/ref-mshp.jpg",
-    desc: "Ministère de la Santé et de l'Hygiène Publique",
-  },
-  {
-    name: "PATH International",
-    logo: "/ref-path.png",
-    desc: "Organisation mondiale de santé publique",
+    name: "Vos clients ici",
+    logo: "/logo-2mails-transparent.png",
+    desc: "Devenez la prochaine success story 2mails.pro",
   },
 ];

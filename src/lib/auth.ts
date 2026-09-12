@@ -1,29 +1,33 @@
 import { cookies } from "next/headers";
+import crypto from "node:crypto";
+import bcrypt from "bcrypt";
 import { db } from "@/lib/db";
 
 const SESSION_COOKIE = "twomails_session";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
-// Simple async hash using Web Crypto API (available in Next.js runtime)
+// HMAC secret used to sign session cookies. Must be set via env in production.
+// Falls back to a dev-only value for local development.
+const SESSION_SECRET =
+  process.env.SESSION_SECRET || "dev-only-session-secret-DO-NOT-USE-IN-PROD-please-set-SESSION_SECRET-env-var";
+
+/**
+ * Hashes a password using bcrypt (cost factor 10).
+ */
 async function hashPassword(password: string): Promise<string> {
-  const salt = crypto.randomUUID();
-  const data = new TextEncoder().encode(`${salt}:${password}`);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  const hash = Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return `${salt}:${hash}`;
+  return bcrypt.hash(password, 10);
 }
 
+/**
+ * Verifies a plaintext password against a stored bcrypt hash.
+ */
 async function verifyPassword(password: string, stored: string): Promise<boolean> {
-  const [salt, hash] = stored.split(":");
-  if (!salt || !hash) return false;
-  const data = new TextEncoder().encode(`${salt}:${password}`);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  const computed = Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return computed === hash;
+  if (!stored) return false;
+  try {
+    return await bcrypt.compare(password, stored);
+  } catch {
+    return false;
+  }
 }
 
 export type SessionUser = {
@@ -149,11 +153,35 @@ export async function registerTenant(
   return { user, tenant };
 }
 
+/**
+ * Computes the HMAC-SHA256 signature (base64) of `payload` using SESSION_SECRET.
+ */
+function signPayload(payload: string): string {
+  return crypto.createHmac("sha256", SESSION_SECRET).update(payload, "utf-8").digest("base64");
+}
+
+/**
+ * Verifies an HMAC-SHA256 signature (constant-time) for `payload`.
+ */
+function verifySignature(payload: string, signature: string): boolean {
+  const expected = signPayload(payload);
+  const expectedBuf = Buffer.from(expected, "base64");
+  const providedBuf = Buffer.from(signature, "base64");
+  if (expectedBuf.length !== providedBuf.length) return false;
+  try {
+    return crypto.timingSafeEqual(expectedBuf, providedBuf);
+  } catch {
+    return false;
+  }
+}
+
 export async function createSession(user: SessionUser) {
   const payload = JSON.stringify(user);
-  const encoded = Buffer.from(payload, "utf-8").toString("base64");
+  const payloadB64 = Buffer.from(payload, "utf-8").toString("base64");
+  const signature = signPayload(payload);
+  const cookieValue = `${payloadB64}.${signature}`;
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, encoded, {
+  cookieStore.set(SESSION_COOKIE, cookieValue, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -172,8 +200,15 @@ export async function getSession(): Promise<SessionUser | null> {
   const raw = cookieStore.get(SESSION_COOKIE)?.value;
   if (!raw) return null;
   try {
-    const decoded = Buffer.from(raw, "base64").toString("utf-8");
-    const parsed = JSON.parse(decoded) as Partial<SessionUser>;
+    const dotIndex = raw.indexOf(".");
+    if (dotIndex < 1 || dotIndex === raw.length - 1) return null;
+    const payloadB64 = raw.slice(0, dotIndex);
+    const signature = raw.slice(dotIndex + 1);
+
+    const payload = Buffer.from(payloadB64, "base64").toString("utf-8");
+    if (!verifySignature(payload, signature)) return null;
+
+    const parsed = JSON.parse(payload) as Partial<SessionUser>;
     if (!parsed?.id || !parsed?.email) return null;
     return {
       id: parsed.id,

@@ -96,8 +96,9 @@ export async function fetchInbox(opts: {
   folder?: string;
   search?: string;
   unreadOnly?: boolean;
+  tenantId?: string | null;
 }): Promise<{ emails: InboxEmail[]; total: number }> {
-  const config = await getEmailConfig();
+  const config = await getEmailConfig(opts.tenantId);
   if (!config || !config.imapHost || !config.imapUser || !config.imapPassword) {
     throw new Error("IMAP non configuré. Allez dans Dashboard → Email & Notifications.");
   }
@@ -158,8 +159,12 @@ export async function fetchInbox(opts: {
   }
 }
 
-export async function fetchEmailDetail(uid: number, folder = "INBOX"): Promise<EmailDetail> {
-  const config = await getEmailConfig();
+export async function fetchEmailDetail(
+  uid: number,
+  folder = "INBOX",
+  tenantId?: string | null,
+): Promise<EmailDetail> {
+  const config = await getEmailConfig(tenantId);
   if (!config || !config.imapHost || !config.imapUser || !config.imapPassword) {
     throw new Error("IMAP non configuré.");
   }
@@ -211,8 +216,12 @@ export async function fetchEmailDetail(uid: number, folder = "INBOX"): Promise<E
   }
 }
 
-export async function markEmailRead(uid: number, folder = "INBOX"): Promise<void> {
-  const config = await getEmailConfig();
+export async function markEmailRead(
+  uid: number,
+  folder = "INBOX",
+  tenantId?: string | null,
+): Promise<void> {
+  const config = await getEmailConfig(tenantId);
   if (!config || !config.imapHost || !config.imapUser || !config.imapPassword) {
     throw new Error("IMAP non configuré.");
   }
@@ -229,8 +238,12 @@ export async function markEmailRead(uid: number, folder = "INBOX"): Promise<void
   }
 }
 
-export async function deleteEmail(uid: number, folder = "INBOX"): Promise<void> {
-  const config = await getEmailConfig();
+export async function deleteEmail(
+  uid: number,
+  folder = "INBOX",
+  tenantId?: string | null,
+): Promise<void> {
+  const config = await getEmailConfig(tenantId);
   if (!config || !config.imapHost || !config.imapUser || !config.imapPassword) {
     throw new Error("IMAP non configuré.");
   }
@@ -283,8 +296,9 @@ export async function sendEmail(opts: {
   html: string;
   text: string;
   replyTo?: string;
+  tenantId?: string | null;
 }): Promise<{ ok: boolean; messageId?: string; error?: string }> {
-  const config = await getEmailConfig();
+  const config = await getEmailConfig(opts.tenantId);
   if (!config || !config.smtpHost || !config.smtpUser) {
     return { ok: false, error: "SMTP non configuré." };
   }

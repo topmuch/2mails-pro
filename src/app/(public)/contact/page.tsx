@@ -1,20 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import {
   MapPin,
   Phone,
   Mail,
-  Languages,
   Send,
-  Navigation,
-  ExternalLink,
-  CalendarDays,
-  Clock,
   Building2,
   User,
   Calendar,
+  CalendarDays,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,13 +33,13 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader, Reveal } from "@/components/site/page-header";
-import { useLanguage } from "@/lib/i18n";
 import { COMPANY } from "@/lib/site-data";
 
 export default function ContactPage() {
   const { toast } = useToast();
-  const { t, lang } = useLanguage();
   const [submitting, setSubmitting] = useState(false);
+  const [booking, setBooking] = useState(false);
+  const [prefTime, setPrefTime] = useState("");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -60,8 +56,8 @@ export default function ContactPage() {
     if (!payload.name || !payload.email || !payload.message) {
       toast({
         variant: "destructive",
-        title: t("contact.requiredTitle"),
-        description: t("contact.requiredDesc"),
+        title: "Champs requis",
+        description: "Veuillez renseigner votre nom, votre email et votre message.",
       });
       return;
     }
@@ -75,24 +71,20 @@ export default function ContactPage() {
       });
       if (!res.ok) throw new Error("Request failed");
       toast({
-        title: t("contact.success"),
-        description: t("contact.successDesc"),
+        title: "Message envoyé",
+        description: "Merci ! Notre équipe vous répondra sous 24h ouvrées.",
       });
       form.reset();
     } catch {
       toast({
         variant: "destructive",
-        title: t("contact.error"),
-        description:
-          `${t("contact.errorDesc")}${t("contact.errorEmailSuffix")}${COMPANY.email}.`,
+        title: "Erreur",
+        description: `Impossible d'envoyer le message. Écrivez-nous à ${COMPANY.email}.`,
       });
     } finally {
       setSubmitting(false);
     }
   }
-
-  const [booking, setBooking] = useState(false);
-  const [prefTime, setPrefTime] = useState("");
 
   async function onBookingSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -112,8 +104,8 @@ export default function ContactPage() {
     if (!payload.name || !payload.email || !payload.message) {
       toast({
         variant: "destructive",
-        title: t("contact.requiredTitle"),
-        description: t("contact.requiredDesc"),
+        title: "Champs requis",
+        description: "Veuillez renseigner votre nom, votre email et votre message.",
       });
       return;
     }
@@ -127,17 +119,16 @@ export default function ContactPage() {
       });
       if (!res.ok) throw new Error("Request failed");
       toast({
-        title: t("contact.rdvSuccess"),
-        description: t("contact.rdvSuccessDesc"),
+        title: "Demande envoyée",
+        description: "Votre demande de rendez-vous a bien été transmise.",
       });
       form.reset();
       setPrefTime("");
     } catch {
       toast({
         variant: "destructive",
-        title: t("contact.error"),
-        description:
-          `${t("contact.errorDesc")}${t("contact.errorPhoneSuffix")}${COMPANY.phone}.`,
+        title: "Erreur",
+        description: `Impossible d'envoyer la demande. Appelez-nous au ${COMPANY.phone}.`,
       });
     } finally {
       setBooking(false);
@@ -147,9 +138,9 @@ export default function ContactPage() {
   return (
     <>
       <PageHeader
-        badge={t("contact.badge")}
-        title={t("contact.title")}
-        subtitle={t("contact.desc")}
+        badge="Contact"
+        title="Parlons de votre CRM"
+        subtitle="Une question, une démo, un projet ? Notre équipe vous répond sous 24h ouvrées."
       />
 
       <section className="py-20 sm:py-28 bg-secondary/40">
@@ -159,34 +150,31 @@ export default function ContactPage() {
             <div>
               <Reveal>
                 <Badge variant="outline" className="mb-4 text-primary border-primary/30">
-                  {t("contact.coords.badge")}
+                  Coordonnées
                 </Badge>
               </Reveal>
               <Reveal delay={0.05}>
                 <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-                  {t("contact.coords.title")}
+                  Comment nous joindre
                 </h2>
               </Reveal>
               <Reveal delay={0.1}>
                 <p className="mt-4 text-base sm:text-lg text-muted-foreground leading-relaxed">
-                  {t("contact.coords.desc")}
+                  2mails.pro est un service SaaS. Pour toute question sur
+                  l&apos;inscription, la facturation ou le paramétrage de votre
+                  CRM, contactez notre équipe support.
                 </p>
               </Reveal>
 
               <Reveal delay={0.15}>
                 <div className="mt-8 space-y-4">
-                  <a
-                    href="https://maps.google.com/?q=Immeuble+Kalimo+Consulting+Group+SICAP+Liberté+1+Dakar"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-4 p-4 rounded-xl bg-background ring-1 ring-border hover:ring-accent/40 transition-all group"
-                  >
+                  <div className="flex items-start gap-4 p-4 rounded-xl bg-background ring-1 ring-border hover:ring-accent/40 transition-all group">
                     <div className="h-11 w-11 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-accent/15 transition-colors">
                       <MapPin className="h-5 w-5 text-primary" />
                     </div>
                     <div>
                       <div className="text-sm font-semibold text-foreground">
-                        {t("contact.address.label")}
+                        Adresse
                       </div>
                       <div className="text-sm text-muted-foreground mt-0.5">
                         {COMPANY.addressLine1}
@@ -194,7 +182,7 @@ export default function ContactPage() {
                         {COMPANY.addressLine2}, {COMPANY.city}, {COMPANY.country}
                       </div>
                     </div>
-                  </a>
+                  </div>
 
                   <a
                     href={`tel:${COMPANY.phoneHref}`}
@@ -205,15 +193,11 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <div className="text-sm font-semibold text-foreground">
-                        {t("contact.phone")}
+                        Téléphone
                       </div>
                       <div className="text-sm text-muted-foreground mt-0.5">
-                        <a href={`tel:${COMPANY.phoneHref}`} className="hover:text-accent transition-colors block">
-                          {COMPANY.phone}
-                        </a>
-                        <a href={`tel:${COMPANY.phoneSecondaryHref}`} className="hover:text-accent transition-colors block text-xs">
-                          {COMPANY.phoneSecondary}
-                        </a>
+                        <span className="block">{COMPANY.phone}</span>
+                        <span className="block text-xs">{COMPANY.phoneSecondary}</span>
                       </div>
                     </div>
                   </a>
@@ -227,7 +211,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <div className="text-sm font-semibold text-foreground">
-                        {t("contact.email")}
+                        Email
                       </div>
                       <div className="text-sm text-muted-foreground mt-0.5">
                         {COMPANY.email}
@@ -239,9 +223,9 @@ export default function ContactPage() {
 
               <Reveal delay={0.2}>
                 <div className="mt-6 flex items-center gap-3 p-4 rounded-xl bg-primary text-primary-foreground">
-                  <Languages className="h-5 w-5 text-accent shrink-0" />
+                  <Clock className="h-5 w-5 text-accent shrink-0" />
                   <p className="text-sm">
-                    {t("contact.bilingual")}
+                    Réponse sous 24h ouvrées — du lundi au vendredi, 9h–18h (CET).
                   </p>
                 </div>
               </Reveal>
@@ -251,9 +235,9 @@ export default function ContactPage() {
             <Reveal delay={0.1}>
               <Card className="shadow-xl border-border/80">
                 <CardHeader>
-                  <CardTitle className="text-xl">{t("contact.formTitle")}</CardTitle>
+                  <CardTitle className="text-xl">Envoyez-nous un message</CardTitle>
                   <CardDescription>
-                    {t("contact.formDesc")}
+                    Décrivez votre projet ou votre question, nous vous répondons rapidement.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -261,57 +245,57 @@ export default function ContactPage() {
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="name">
-                          {t("contact.name")} <span className="text-destructive">*</span>
+                          Nom <span className="text-destructive">*</span>
                         </Label>
                         <Input
                           id="name"
                           name="name"
-                          placeholder={t("contact.placeholder.name")}
+                          placeholder="Votre nom"
                           autoComplete="name"
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">{t("contact.phone")}</Label>
+                        <Label htmlFor="phone">Téléphone</Label>
                         <Input
                           id="phone"
                           name="phone"
                           type="tel"
-                          placeholder="+221 ..."
+                          placeholder="+33 ..."
                           autoComplete="tel"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">
-                        {t("contact.email")} <span className="text-destructive">*</span>
+                        Email <span className="text-destructive">*</span>
                       </Label>
                       <Input
                         id="email"
                         name="email"
                         type="email"
-                        placeholder="vous@exemple.com"
+                        placeholder="vous@entreprise.com"
                         autoComplete="email"
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="subject">{t("contact.subject")}</Label>
+                      <Label htmlFor="subject">Sujet</Label>
                       <Input
                         id="subject"
                         name="subject"
-                        placeholder={t("contact.placeholder.subject")}
+                        placeholder="Démo, devis, support..."
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="message">
-                        {t("contact.message")} <span className="text-destructive">*</span>
+                        Message <span className="text-destructive">*</span>
                       </Label>
                       <Textarea
                         id="message"
                         name="message"
                         rows={5}
-                        placeholder={t("contact.placeholder.message")}
+                        placeholder="Décrivez votre besoin..."
                         required
                       />
                     </div>
@@ -324,11 +308,11 @@ export default function ContactPage() {
                       {submitting ? (
                         <>
                           <span className="h-4 w-4 mr-2 rounded-full border-2 border-accent-foreground/40 border-t-accent-foreground animate-spin" />
-                          {t("contact.sending")}
+                          Envoi en cours...
                         </>
                       ) : (
                         <>
-                          {t("contact.send")} <Send className="ml-2 h-4 w-4" />
+                          Envoyer <Send className="ml-2 h-4 w-4" />
                         </>
                       )}
                     </Button>
@@ -351,28 +335,30 @@ export default function ContactPage() {
             <Reveal>
               <Badge className="mb-4 bg-white/10 text-white border border-white/20 hover:bg-white/15">
                 <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
-                {t("contact.rdvBadge")}
+                Démonstration
               </Badge>
               <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                {t("contact.rdv")}
+                Réservez une démo de 2mails.pro
               </h2>
               <p className="mt-4 text-base sm:text-lg text-white/80 leading-relaxed">
-                {t("contact.rdvIntro")}
+                Découvrez 2mails.pro en 30 minutes : pipeline, clients,
+                messagerie, analytics. Nous vous montrons comment configurer
+                votre espace et inviter votre équipe.
               </p>
 
               <div className="mt-8 space-y-3">
                 {[
-                  { icon: Clock, text: t("contact.rdvBenefit1") },
-                  { icon: User, text: t("contact.rdvBenefit2") },
-                  { icon: Building2, text: t("contact.rdvBenefit3") },
-                  { icon: Calendar, text: t("contact.rdvBenefit4") },
+                  { icon: Clock, text: "Démo personnalisée de 30 minutes" },
+                  { icon: User, text: "Avec un produit expert" },
+                  { icon: Building2, text: "Adaptée à votre secteur d'activité" },
+                  { icon: Calendar, text: "Créneau au choix (visio)" },
                 ].map((b) => (
                   <div
                     key={b.text}
                     className="flex items-center gap-3 p-3 rounded-lg bg-white/5 ring-1 ring-white/10"
                   >
                     <div className="h-9 w-9 rounded-md bg-accent/20 flex items-center justify-center shrink-0">
-                      <b.icon className="h-4.5 w-4.5 text-accent" style={{ width: "1.125rem", height: "1.125rem" }} />
+                      <b.icon className="text-accent" style={{ width: "1.125rem", height: "1.125rem" }} />
                     </div>
                     <span className="text-sm sm:text-base text-white/90">{b.text}</span>
                   </div>
@@ -386,10 +372,10 @@ export default function ContactPage() {
                 <CardHeader>
                   <CardTitle className="text-xl flex items-center gap-2">
                     <CalendarDays className="h-5 w-5 text-primary" />
-                    {t("contact.rdvTitle")}
+                    Réserver un créneau
                   </CardTitle>
                   <CardDescription>
-                    {t("contact.rdvCardDesc")}
+                    Choisissez une date et un horaire, nous confirmerons par email.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -397,25 +383,25 @@ export default function ContactPage() {
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="rdv-name">
-                          {t("contact.name")} <span className="text-destructive">*</span>
+                          Nom <span className="text-destructive">*</span>
                         </Label>
                         <Input
                           id="rdv-name"
                           name="rdv-name"
-                          placeholder={t("contact.placeholder.name")}
+                          placeholder="Votre nom"
                           autoComplete="name"
                           required
                         />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="rdv-email">
-                          {t("contact.email")} <span className="text-destructive">*</span>
+                          Email <span className="text-destructive">*</span>
                         </Label>
                         <Input
                           id="rdv-email"
                           name="rdv-email"
                           type="email"
-                          placeholder="vous@exemple.com"
+                          placeholder="vous@entreprise.com"
                           autoComplete="email"
                           required
                         />
@@ -423,36 +409,36 @@ export default function ContactPage() {
                     </div>
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="rdv-phone">{t("contact.phone")}</Label>
+                        <Label htmlFor="rdv-phone">Téléphone</Label>
                         <Input
                           id="rdv-phone"
                           name="rdv-phone"
                           type="tel"
-                          placeholder="+221 ..."
+                          placeholder="+33 ..."
                           autoComplete="tel"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="rdv-company">{t("contact.company")}</Label>
+                        <Label htmlFor="rdv-company">Organisation</Label>
                         <Input
                           id="rdv-company"
                           name="rdv-company"
-                          placeholder={t("contact.placeholder.company")}
+                          placeholder="Acme Inc."
                           autoComplete="organization"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="rdv-subject">{t("contact.subject")}</Label>
+                      <Label htmlFor="rdv-subject">Sujet</Label>
                       <Input
                         id="rdv-subject"
                         name="rdv-subject"
-                        placeholder={t("contact.placeholder.rdvSubject")}
+                        placeholder="Démo CRM, paramétrage, etc."
                       />
                     </div>
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="rdv-date">{t("contact.rdvDate")}</Label>
+                        <Label htmlFor="rdv-date">Date souhaitée</Label>
                         <Input
                           id="rdv-date"
                           name="rdv-date"
@@ -460,10 +446,10 @@ export default function ContactPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="rdv-time">{t("contact.rdvTime")}</Label>
+                        <Label htmlFor="rdv-time">Créneau</Label>
                         <Select value={prefTime} onValueChange={setPrefTime}>
                           <SelectTrigger id="rdv-time">
-                            <SelectValue placeholder={t("contact.placeholder.timeslot")} />
+                            <SelectValue placeholder="Choisir un horaire" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="09:00">09:00</SelectItem>
@@ -480,13 +466,13 @@ export default function ContactPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="rdv-message">
-                        {t("contact.message")} <span className="text-destructive">*</span>
+                        Message <span className="text-destructive">*</span>
                       </Label>
                       <Textarea
                         id="rdv-message"
                         name="rdv-message"
                         rows={4}
-                        placeholder={t("contact.placeholder.rdvMessage")}
+                        placeholder="Votre besoin, votre secteur, votre équipe..."
                         required
                       />
                     </div>
@@ -499,11 +485,11 @@ export default function ContactPage() {
                       {booking ? (
                         <>
                           <span className="h-4 w-4 mr-2 rounded-full border-2 border-accent-foreground/40 border-t-accent-foreground animate-spin" />
-                          {t("contact.sending")}
+                          Envoi en cours...
                         </>
                       ) : (
                         <>
-                          {t("contact.rdvBtn")}{" "}
+                          Réserver ma démo{" "}
                           <CalendarDays className="ml-2 h-4 w-4" />
                         </>
                       )}
@@ -513,128 +499,6 @@ export default function ContactPage() {
               </Card>
             </Reveal>
           </div>
-        </div>
-      </section>
-
-      {/* Carte & itinéraire */}
-      <section className="py-16 sm:py-24 bg-background">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="text-center mb-10">
-              <Badge variant="outline" className="mb-4 text-primary border-primary/30">
-                <Navigation className="mr-1.5 h-3.5 w-3.5" />
-                {t("contact.findUs")}
-              </Badge>
-              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-                {t("contact.address")}
-              </h2>
-              <p className="mt-3 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-                {t("contact.addressDesc")}
-              </p>
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.05}>
-            <div className="grid lg:grid-cols-3 gap-5">
-              {/* Carte interactive */}
-              <div className="lg:col-span-2">
-                <div className="relative rounded-2xl overflow-hidden ring-1 ring-border shadow-lg h-[380px] sm:h-[460px] bg-secondary">
-                  <iframe
-                    title={t("contact.mapTitle")}
-                    src="https://www.openstreetmap.org/export/embed.html?bbox=-17.4680%2C14.6880%2C-17.4280%2C14.7080&layer=mapnik&marker=14.6980%2C-17.4480"
-                    className="absolute inset-0 h-full w-full"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                  <div className="absolute top-4 left-4 z-10 bg-background/95 backdrop-blur-sm rounded-lg shadow-md ring-1 ring-border px-4 py-3 max-w-xs">
-                    <div className="flex items-center gap-2 text-sm font-bold text-foreground">
-                      <MapPin className="h-4 w-4 text-accent" />
-                      2mails.pro
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {COMPANY.addressLine1}<br />
-                      {COMPANY.addressLine2}, {COMPANY.city}, {COMPANY.country}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Itinéraire & infos */}
-              <div className="space-y-4">
-                <Card className="ring-1 ring-border">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-3">
-                      <div className="h-11 w-11 rounded-lg bg-accent/15 flex items-center justify-center shrink-0">
-                        <Navigation className="h-5 w-5 text-accent" />
-                      </div>
-                      <div>
-                        <h3 className="text-base font-bold text-foreground">
-                          {t("contact.itinerary")}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                          {t("contact.itineraryDesc")}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      asChild
-                      className="mt-4 w-full bg-accent text-accent-foreground hover:bg-accent/90"
-                    >
-                      <a
-                        href="https://www.google.com/maps/dir/?api=1&destination=Immeuble+Kalimo+Consulting+Group+SICAP+Liberté+1+Dakar+Sénégal"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Navigation className="mr-2 h-4 w-4" />
-                        {t("contact.googleMaps")}
-                        <ExternalLink className="ml-2 h-3.5 w-3.5" />
-                      </a>
-                    </Button>
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="mt-2 w-full"
-                    >
-                      <a
-                        href="https://www.openstreetmap.org/?mlat=14.6980&mlon=-17.4480#map=16/14.6980/-17.4480"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <MapPin className="mr-2 h-4 w-4" />
-                        {t("contact.openStreet")}
-                        <ExternalLink className="ml-2 h-3.5 w-3.5" />
-                      </a>
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card className="ring-1 ring-border bg-primary text-primary-foreground">
-                  <CardContent className="pt-6">
-                    <h3 className="text-sm font-semibold uppercase tracking-wide text-white/80 flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-accent" />
-                      {t("contact.gps")}
-                    </h3>
-                    <div className="mt-3 space-y-2 text-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="text-white/70">{t("contact.latitude")}</span>
-                        <span className="font-mono font-medium">14.6980° N</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-white/70">{t("contact.longitude")}</span>
-                        <span className="font-mono font-medium">17.4480° W</span>
-                      </div>
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-white/15">
-                      <p className="text-xs text-white/70 leading-relaxed">
-                        {t("contact.gpsNote")}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </Reveal>
         </div>
       </section>
     </>

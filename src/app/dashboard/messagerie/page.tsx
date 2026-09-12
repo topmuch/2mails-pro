@@ -82,6 +82,28 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
+/**
+ * Sanitizes untrusted email HTML before rendering via dangerouslySetInnerHTML.
+ * Strips <script>, <iframe>, <object>, <embed>, all inline event handlers
+ * (onerror=, onclick=, ...), and javascript: URLs.
+ *
+ * NOTE: This is a defense-in-depth regex sanitizer. For full robustness a
+ * DOM-based sanitizer (DOMPurify + jsdom) would be preferred, but that
+ * requires a DOM environment which is awkward in Next.js server rendering.
+ */
+function sanitizeEmailHtml(html: string): string {
+  if (!html) return "";
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
+    .replace(/<object[\s\S]*?<\/object>/gi, "")
+    .replace(/<embed[\s\S]*?>/gi, "")
+    .replace(/on\w+\s*=\s*"[^"]*"/gi, "")
+    .replace(/on\w+\s*=\s*'[^']*'/gi, "")
+    .replace(/on\w+\s*=\s*[^\s>]+/gi, "")
+    .replace(/javascript:/gi, "");
+}
+
 function textToHtml(text: string): string {
   if (!text) return "";
   return `<p>${escapeHtml(text).replace(/\n/g, "<br/>")}</p>`;
@@ -547,9 +569,11 @@ export default function MessageriePage() {
                   className="email-content bg-background rounded-xl p-5 sm:p-6 ring-1 ring-border text-foreground text-sm"
                   style={{ lineHeight: 1.7 }}
                   dangerouslySetInnerHTML={{
-                    __html: selectedEmail.bodyHtml || (selectedEmail.bodyText
-                      ? `<pre style="white-space: pre-wrap; font-family: inherit; margin: 0;">${escapeHtml(selectedEmail.bodyText)}</pre>`
-                      : "<p style=\"color: #94a3b8; font-style: italic;\">Aucun contenu.</p>")
+                    __html: selectedEmail.bodyHtml
+                      ? sanitizeEmailHtml(selectedEmail.bodyHtml)
+                      : (selectedEmail.bodyText
+                        ? `<pre style="white-space: pre-wrap; font-family: inherit; margin: 0;">${escapeHtml(selectedEmail.bodyText)}</pre>`
+                        : "<p style=\"color: #94a3b8; font-style: italic;\">Aucun contenu.</p>"),
                   }}
                 />
                 {selectedEmail.attachments.length > 0 && (

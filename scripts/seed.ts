@@ -7,17 +7,12 @@
  * Usage: bun scripts/seed.ts
  */
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const db = new PrismaClient();
 
 async function hashPassword(password: string): Promise<string> {
-  const salt = crypto.randomUUID();
-  const data = new TextEncoder().encode(`${salt}:${password}`);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  const hash = Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return `${salt}:${hash}`;
+  return bcrypt.hash(password, 10);
 }
 
 async function ensureTenantSettings(tenantId: string, tenantName: string) {

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Building2,
@@ -17,6 +18,8 @@ import {
   Sparkles,
   Users,
   Zap,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,8 +62,19 @@ const PLANS = [
   },
 ];
 
-export default function RegisterPage() {
+type InvitationInfo = {
+  ok: boolean;
+  email?: string;
+  role?: string;
+  tenantName?: string;
+  error?: string;
+};
+
+function RegisterInner() {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get("invite") || "";
+
   const [tenantName, setTenantName] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -70,9 +84,53 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("free");
 
+  // Invitation state
+  const [invitation, setInvitation] = useState<InvitationInfo | null>(null);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+
+  const isInviteFlow = Boolean(inviteToken);
+
+  // Fetch invitation details if a token is present
+  useEffect(() => {
+    if (!inviteToken) return;
+    let cancelled = false;
+    setInviteLoading(true);
+    fetch(`/api/invitations/verify?token=${encodeURIComponent(inviteToken)}`)
+      .then(async (res) => {
+        const json = (await res.json()) as InvitationInfo;
+        if (cancelled) return;
+        setInvitation(json);
+        if (json.ok && json.email) {
+          setEmail(json.email);
+        } else {
+          setInviteError(json.error || "Invitation invalide ou expirée.");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setInviteError("Impossible de vérifier l'invitation.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setInviteLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [inviteToken]);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!tenantName.trim() || !name.trim() || !email.trim() || !password) {
+    if (!isInviteFlow && !tenantName.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Champ requis",
+        description: "Veuillez renseigner le nom de votre organisation.",
+      });
+      return;
+    }
+    if (!name.trim() || !email.trim() || !password) {
       toast({
         variant: "destructive",
         title: "Champs requis",
@@ -101,12 +159,21 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.trim().toLowerCase(),
-          password,
-          name: name.trim(),
-          tenantName: tenantName.trim(),
-        }),
+        body: JSON.stringify(
+          isInviteFlow
+            ? {
+                email: email.trim().toLowerCase(),
+                password,
+                name: name.trim(),
+                inviteToken,
+              }
+            : {
+                email: email.trim().toLowerCase(),
+                password,
+                name: name.trim(),
+                tenantName: tenantName.trim(),
+              },
+        ),
       });
       const json = await res.json();
       if (json.ok) {
@@ -255,37 +322,96 @@ export default function RegisterPage() {
             {/* Header */}
             <div className="mb-6">
               <div className="inline-flex items-center gap-2 rounded-full bg-accent/15 text-accent-foreground px-3 py-1 text-xs font-semibold mb-4">
-                <Building2 className="h-3.5 w-3.5" />
-                Créer un compte
+                {isInviteFlow ? (
+                  <>
+                    <Users className="h-3.5 w-3.5" />
+                    Rejoindre une organisation
+                  </>
+                ) : (
+                  <>
+                    <Building2 className="h-3.5 w-3.5" />
+                    Créer un compte
+                  </>
+                )}
               </div>
               <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                S&apos;inscrire
+                {isInviteFlow ? "Accepter l'invitation" : "S'inscrire"}
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                Démarrez gratuitement avec votre organisation sur 2mails.pro.
+                {isInviteFlow
+                  ? "Vous avez été invité à rejoindre une organisation sur 2mails.pro."
+                  : "Démarrez gratuitement avec votre organisation sur 2mails.pro."}
               </p>
             </div>
 
+            {/* Invitation banner */}
+            {isInviteFlow && (
+              <div className="mb-5">
+                {inviteLoading && (
+                  <div className="flex items-start gap-2.5 rounded-lg bg-secondary/60 p-3.5 ring-1 ring-border">
+                    <Loader2 className="h-4 w-4 text-accent mt-0.5 shrink-0 animate-spin" />
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Vérification de l'invitation en cours...
+                    </p>
+                  </div>
+                )}
+                {!inviteLoading && invitation?.ok && invitation.tenantName && (
+                  <div className="flex items-start gap-2.5 rounded-lg bg-emerald-500/10 p-3.5 ring-1 ring-emerald-500/30">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-foreground leading-relaxed">
+                      Vous avez été invité à rejoindre{" "}
+                      <strong className="font-semibold">{invitation.tenantName}</strong>
+                      {invitation.role ? (
+                        <>
+                          {" "}en tant que{" "}
+                          <span className="font-mono">{invitation.role}</span>
+                        </>
+                      ) : null}
+                      . Renseignez votre nom et votre mot de passe pour finaliser.
+                    </p>
+                  </div>
+                )}
+                {!inviteLoading && inviteError && (
+                  <div className="flex items-start gap-2.5 rounded-lg bg-destructive/10 p-3.5 ring-1 ring-destructive/30">
+                    <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                    <div className="text-xs leading-relaxed">
+                      <p className="font-medium text-destructive">Invitation invalide</p>
+                      <p className="text-muted-foreground mt-0.5">{inviteError}</p>
+                      <Link
+                        href="/register"
+                        className="inline-block mt-2 text-primary hover:underline font-medium"
+                      >
+                        Créer un nouveau compte →
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Form */}
             <form onSubmit={onSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="tenantName" className="text-sm font-medium">
-                  Nom de l&apos;organisation
-                </Label>
-                <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="tenantName"
-                    type="text"
-                    value={tenantName}
-                    onChange={(e) => setTenantName(e.target.value)}
-                    placeholder="Acme Inc."
-                    className="pl-10 h-11"
-                    autoComplete="organization"
-                    required
-                  />
+              {/* Organization name — only for normal flow */}
+              {!isInviteFlow && (
+                <div className="space-y-2">
+                  <Label htmlFor="tenantName" className="text-sm font-medium">
+                    Nom de l&apos;organisation
+                  </Label>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="tenantName"
+                      type="text"
+                      value={tenantName}
+                      onChange={(e) => setTenantName(e.target.value)}
+                      placeholder="Acme Inc."
+                      className="pl-10 h-11"
+                      autoComplete="organization"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium">
@@ -321,8 +447,15 @@ export default function RegisterPage() {
                     className="pl-10 h-11"
                     autoComplete="email"
                     required
+                    // For invitation flow, lock the email to the invitation's email
+                    disabled={isInviteFlow && Boolean(invitation?.ok)}
                   />
                 </div>
+                {isInviteFlow && invitation?.ok && (
+                  <p className="text-xs text-muted-foreground">
+                    L&apos;email est fixé par l&apos;invitation.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -371,40 +504,42 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Plan selector — display only (all start as Free) */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Plan <span className="text-muted-foreground font-normal">(tous démarrent en Free)</span>
-                </Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {PLANS.map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setSelectedPlan(p.id)}
-                      className={cn(
-                        "rounded-lg border p-3 text-left transition-all",
-                        selectedPlan === p.id
-                          ? "border-accent bg-accent/10 ring-1 ring-accent"
-                          : "border-border hover:border-accent/50",
-                      )}
-                    >
-                      <div className="text-xs font-semibold text-foreground">{p.name}</div>
-                      <div className="text-sm font-bold text-accent mt-0.5">
-                        {p.price}
-                        <span className="text-[10px] text-muted-foreground font-normal">/mois</span>
-                      </div>
-                    </button>
-                  ))}
+              {/* Plan selector — only for normal flow (invited users inherit tenant plan) */}
+              {!isInviteFlow && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    Plan <span className="text-muted-foreground font-normal">(tous démarrent en Free)</span>
+                  </Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {PLANS.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setSelectedPlan(p.id)}
+                        className={cn(
+                          "rounded-lg border p-3 text-left transition-all",
+                          selectedPlan === p.id
+                            ? "border-accent bg-accent/10 ring-1 ring-accent"
+                            : "border-border hover:border-accent/50",
+                        )}
+                      >
+                        <div className="text-xs font-semibold text-foreground">{p.name}</div>
+                        <div className="text-sm font-bold text-accent mt-0.5">
+                          {p.price}
+                          <span className="text-[10px] text-muted-foreground font-normal">/mois</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Vous pourrez changer de plan à tout moment depuis votre tableau de bord.
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Vous pourrez changer de plan à tout moment depuis votre tableau de bord.
-                </p>
-              </div>
+              )}
 
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (isInviteFlow && (inviteLoading || !invitation?.ok))}
                 className="w-full h-11 bg-accent text-accent-foreground hover:bg-accent/90 shadow-md font-semibold"
               >
                 {loading ? (
@@ -414,7 +549,7 @@ export default function RegisterPage() {
                   </>
                 ) : (
                   <>
-                    Créer mon compte
+                    {isInviteFlow ? "Rejoindre l'organisation" : "Créer mon compte"}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
@@ -454,5 +589,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterInner />
+    </Suspense>
   );
 }

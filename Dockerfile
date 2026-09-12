@@ -8,7 +8,7 @@ RUN npm install -g bun
 WORKDIR /app
 
 # Clone the repository
-RUN git clone https://github.com/topmuch/ABCD.git .
+RUN git clone https://github.com/topmuch/2mails-pro.git .
 
 # Install dependencies
 RUN bun install

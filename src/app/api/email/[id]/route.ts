@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchEmailDetail, markEmailRead, deleteEmail } from "@/lib/imap";
+import { getSession } from "@/lib/auth";
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
+    const session = await getSession();
+    if (!session || !session.tenantId) {
+      return NextResponse.json({ ok: false, error: "Non authentifié" }, { status: 401 });
+    }
+
     const { id } = await params;
     const uid = Number(id);
     if (!uid) {
@@ -12,7 +18,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     }
     const { searchParams } = new URL(req.url);
     const folder = searchParams.get("folder") || "INBOX";
-    const detail = await fetchEmailDetail(uid, folder);
+    const detail = await fetchEmailDetail(uid, folder, session.tenantId);
     return NextResponse.json({ ok: true, email: detail });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur serveur";
@@ -23,6 +29,11 @@ export async function GET(req: NextRequest, { params }: Params) {
 
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
+    const session = await getSession();
+    if (!session || !session.tenantId) {
+      return NextResponse.json({ ok: false, error: "Non authentifié" }, { status: 401 });
+    }
+
     const { id } = await params;
     const uid = Number(id);
     if (!uid) {
@@ -30,7 +41,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     }
     const { searchParams } = new URL(req.url);
     const folder = searchParams.get("folder") || "INBOX";
-    await deleteEmail(uid, folder);
+    await deleteEmail(uid, folder, session.tenantId);
     return NextResponse.json({ ok: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur serveur";
