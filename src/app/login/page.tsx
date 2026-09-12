@@ -294,9 +294,8 @@ function LoginForm() {
             {/* Help link + Register link */}
             <div className="mt-6 space-y-3 text-center text-sm text-muted-foreground">
               <p>
-                Besoin d&apos;aide pour vous connecter ?{" "}
-                <Link href="/contact" className="text-primary hover:underline font-medium">
-                  Contactez-nous
+                <Link href="/forgot-password" className="text-primary hover:underline font-medium">
+                  Mot de passe oublié ?
                 </Link>
               </p>
               <p className="border-t border-border pt-3">

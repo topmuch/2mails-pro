@@ -41,7 +41,11 @@ export function middleware(req: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
     try {
-      const decoded = Buffer.from(session, "base64").toString("utf-8");
+      // Cookie format: base64(payload).base64(signature)
+      // For middleware, we only need to check the payload part exists
+      const parts = session.split(".");
+      if (parts.length < 2) throw new Error("invalid format");
+      const decoded = Buffer.from(parts[0], "base64").toString("utf-8");
       const parsed = JSON.parse(decoded);
       if (!parsed?.id || !parsed?.email) {
         throw new Error("invalid");

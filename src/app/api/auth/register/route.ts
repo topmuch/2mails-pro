@@ -1,11 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createUser, registerTenant, createSession } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { rateLimit, getClientIP } from "@/lib/rate-limit";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting
+    const ip = getClientIP(req);
+    const limit = rateLimit(ip);
+    if (!limit.allowed) {
+      const retryAfter = Math.ceil((limit.resetAt - Date.now()) / 1000);
+      return NextResponse.json(
+        { ok: false, error: `Trop de tentatives. Réessayez dans ${Math.ceil(retryAfter / 60)} min.` },
+        { status: 429, headers: { "Retry-After": String(retryAfter) } }
+      );
+    }
+
     const body = await req.json().catch(() => null);
     if (!body || typeof body !== "object") {
       return NextResponse.json(
